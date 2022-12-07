@@ -1,0 +1,39 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "build Scene Editor",
+            "command": "mingw32-make.exe",
+            "args": [
+                "PROG_NAME=sceneEditor",
+                "-f",
+                "makefile"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher" : [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+            },
+            "detail": "build the Scene Editor"
+        },
+        {
+            "type": "shell",
+            "label": "clean Scene Editor",
+            "command": "mingw32-make.exe",
+            "args": [
+                "cleanall",
+                "PROG_NAME=sceneEditor",
+                "-f",
+                "makefile"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        }
+    ]
+}
