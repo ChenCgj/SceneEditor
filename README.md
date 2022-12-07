@@ -1,5 +1,6 @@
 # SceneEditor
-CG course final project
+CG course final project  
+This repo is only for homework. We are grateful to the authors of the libraries we use.
 
 ## build
 
