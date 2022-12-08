@@ -3,6 +3,31 @@
 #include "shader.h"
 #include "texture_manager.h"
 #include "debug.h"
+using std::string;
+
+static char *load_image_data(const string &image, int &width, int &height, int &pitch)
+{
+    SDL_Surface *img_surface = IMG_Load(image.c_str());
+    if (img_surface == nullptr) {
+        ERRINFO("Load image fail. SDL_image: %s", IMG_GetError());
+        return nullptr;
+    }
+    width = img_surface->w;
+    height = img_surface->h;
+    pitch = img_surface->pitch;
+    const char *data = static_cast<const char *>(img_surface->pixels);
+    char *buf = new char[pitch * height];
+    if (buf == nullptr) {
+        ERRINFO("Load image fail: no enought memory");
+        SDL_FreeSurface(img_surface);
+        return nullptr;
+    }
+    for (int i = 0; i < height; ++i) {
+        memcpy(buf + pitch * (height - i - 1), data + pitch * i, pitch);
+    }
+    SDL_FreeSurface(img_surface);
+    return buf;
+}
 
 Texture_manager Texture_manager::inst;
 Texture_manager::Texture_manager() : max_texture(16), texture_map(max_texture, std::make_pair(0, GL_TEXTURE_2D))
@@ -20,35 +45,23 @@ Texture_manager *Texture_manager::instance()
     return &inst;
 }
 
-GLuint Texture_manager::load_texture(GLenum texture_type, const std::string &image, GLenum min_filter, GLenum mag_filter, GLenum wrap_s, GLenum wrap_t, float r, float g, float b, float a)
+GLuint Texture_manager::load_texture(GLenum texture_type, const string &image, GLenum min_filter, GLenum mag_filter, GLenum wrap_s, GLenum wrap_t, float r, float g, float b, float a)
 {
-    SDL_Surface *img_surface = IMG_Load(image.c_str());
-    if (img_surface == nullptr) {
-        ERRINFO("Load image fail. SDL_image: %s", IMG_GetError());
-        return 0;
-    }
-    int width = img_surface->w;
-    int height = img_surface->h;
-    int pitch = img_surface->pitch;
-    const char *data = static_cast<const char *>(img_surface->pixels);
-    char *buf = new char[pitch * height];
-    if (buf == nullptr) {
-        ERRINFO("Load image fail: no enought memory");
-        SDL_FreeSurface(img_surface);
-        return -1;
-    }
-    for (int i = 0; i < height; ++i) {
-        memcpy(buf + pitch * (height - i - 1), data + pitch * i, pitch);
-    }
+    // if (glCompressedTexImage2D())
 
-    GLenum form;
+    int width, height, pitch;
+    auto buf = load_image_data(image, width, height, pitch);
+    GLenum form, form_to;
     int depth = pitch / width;
     if (depth == 1) {
         form = GL_RED;
+        form_to = GL_COMPRESSED_RED;
     } else if (depth == 3) {
         form = GL_RGB;
+        form_to = GL_COMPRESSED_RGB;
     } else if (depth == 4) {
         form = GL_RGBA;
+        form_to = GL_COMPRESSED_RGBA;
     }
 
     int id_temp = texture_map[max_texture - 1].first;
@@ -58,13 +71,12 @@ GLuint Texture_manager::load_texture(GLenum texture_type, const std::string &ima
     glCreateTextures(texture_type, 1, &id);
     if (id == 0) {
         delete []buf;
-        SDL_FreeSurface(img_surface);
         ERRINFO("Create texture fail.");
         return id;
     }
     glActiveTexture(GL_TEXTURE0 + max_texture - 1);
     glBindTexture(texture_type, id);
-    glTexImage2D(texture_type, 0, form, width, height, 0, form, GL_UNSIGNED_BYTE, buf);
+    glTexImage2D(texture_type, 0, form_to, width, height, 0, form, GL_UNSIGNED_BYTE, buf);
     glGenerateMipmap(texture_type);
     glTexParameteri(texture_type, GL_TEXTURE_WRAP_S, wrap_s);
     glTexParameteri(texture_type, GL_TEXTURE_WRAP_T, wrap_t);
@@ -78,7 +90,6 @@ GLuint Texture_manager::load_texture(GLenum texture_type, const std::string &ima
     glBindTexture(type_temp, id_temp);
 
     delete []buf;
-    SDL_FreeSurface(img_surface);
 
     return id;
 }
