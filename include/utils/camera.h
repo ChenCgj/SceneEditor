@@ -16,6 +16,7 @@ public:
     void move(const glm::vec3 &delta);
     void rotate(float rad, const glm::vec3 &axis);
     void set_distance(float near, float far);
+    void get_distance(float &near, float &far) const;
     void set_fov(float rad);
     float get_fov() const;
     void set_size_ratio(float ratio);

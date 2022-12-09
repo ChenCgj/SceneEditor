@@ -5,17 +5,28 @@
 #include "mesh.h"
 #include "gtc/matrix_transform.hpp"
 #include "SDL.h"
+#include "texture_manager.h"
 
 using glm::vec3;
-using glm::radians;
-using std::make_shared;
-using std::vector;
+using glm::vec4;
 using glm::mat4;
+using std::make_shared;
+using glm::radians;
 using glm::scale;
+using glm::inverse;
+using glm::normalize;
 
 static void initOpengl();
 
-SceneEditorApp::SceneEditorApp(int width, int height) : Application{"Scene Editor", width, height}
+SceneEditorApp::SceneEditorApp(int width, int height) : Application{"Scene Editor", width, height},
+        m_skybox{{
+            "..\\resource\\skyBox1\\sky_right.png",
+            "..\\resource\\skyBox1\\sky_left.png",
+            "..\\resource\\skyBox1\\sky_top.png",
+            "..\\resource\\skyBox1\\sky_bottom.png",
+            "..\\resource\\skyBox1\\sky_front.png",
+            "..\\resource\\skyBox1\\sky_back.png",
+        }}
 {
     initOpengl();
     glViewport(0, 0, width, height);
@@ -23,17 +34,7 @@ SceneEditorApp::SceneEditorApp(int width, int height) : Application{"Scene Edito
     m_camera.set_pos(vec3{0.0, 0.0, 5.0}, vec3{0, 0, 0});
     m_camera.set_distance(0.1, 1000);
     m_mesh = make_shared<Mesh>();
-    vector<float> v = {
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        0.0f, 0.5f, 0.0f
-    };
-    vector<GLuint> indiex = {
-        0, 1, 2
-    };
-    if (!m_mesh->loadData(v, {}, {}, {}, {}, {}, indiex)) {
-        ERRINFO("Load data fail.");
-    }
+
     if (!m_shader.generate_program({"..\\resource\\shader\\vert.glsl"}, {"..\\resource\\shader\\frag.glsl"})) {
         ERRINFO("generate shader fail.");
     }
@@ -47,12 +48,15 @@ bool SceneEditorApp::render()
 {
     glClearColor(0.3, 0.4, 0.2, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // glDepthMask(GL_FALSE);
+    // glDepthMask(GL_TRUE);
+
     if (!m_shader.valid()) {
         ERRINFO("Shader invalid.");
         return false;
     }
     m_shader.use_program();
-    // m_mesh->draw(m_shader);
     if (!m_shader.set_uniform("mview", m_camera.get_camera_matrix())) {
         ERRINFO("Set uniform variable %s fail.", "mview");
         return false;
@@ -62,12 +66,36 @@ bool SceneEditorApp::render()
         return false;
     }
     m_model.draw(m_shader);
+
+    m_skybox.draw(m_camera.get_camera_matrix(), m_camera.get_project_matrix());
     return true;
 }
 
 void SceneEditorApp::dealButtonDown(const std::pair<int, int> &pos, MouseBtn button)
 {
-    
+    if (button != MouseBtn::k_btnLeft || altKeyPressed()) {
+        return;
+    }
+    auto size = getWindowSize();
+
+    mat4 reset1{1.0};   // screen to ndc
+    reset1[0][0] = 2.0 / size.first;
+    reset1[1][1] = -2.0 / size.second;
+    reset1[3][0] = -1;
+    reset1[3][1] = 1;
+    float near, far;
+    m_camera.get_distance(near, far);
+    reset1 *= near;     // reset divide
+
+    mat4 reset2 = inverse(m_camera.get_camera_matrix()) * inverse(m_camera.get_project_matrix());
+    vec4 posWorld = reset2 * reset1 * vec4{pos.first, pos.second, -1, 1};       // the world pos, actually it's the point at the near plane
+    vec3 cameraPos = m_camera.get_pos();
+    vec3 dir = vec3(posWorld) - cameraPos;
+    dir = glm::normalize(dir);
+    printf("the world pos is (%f, %f, %f), the camera pos is (%f, %f, %f), dir is (%f, %f, %f)\n",
+           posWorld.x, posWorld.y, posWorld.z,
+           cameraPos.x, cameraPos.y, cameraPos.z,
+           dir.x, dir.y, dir.z); 
 }
 
 // void SceneEditorApp::dealButtonUp(const std::pair<int, int> &pos, MouseBtn button)
@@ -77,7 +105,7 @@ void SceneEditorApp::dealButtonDown(const std::pair<int, int> &pos, MouseBtn but
 
 void SceneEditorApp::dealMouseMove(const std::pair<int, int> &pos, const std::pair<int, int> &rpos)
 {
-    if (!leftButtonPressed()) {
+    if (!leftButtonPressed() || !altKeyPressed()) {
         return;
     }
     m_camera.rotate(radians(rpos.first * 0.1), vec3{0, 1, 0});
@@ -135,7 +163,6 @@ void SceneEditorApp::dealWinSizeChange(const std::pair<int, int> &size)
 // {
 
 // }
-
 
 SceneEditorApp::~SceneEditorApp()
 {

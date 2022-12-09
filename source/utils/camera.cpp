@@ -74,6 +74,12 @@ void Camera::set_distance(float near, float far)
     this->far = far;
 }
 
+void Camera::get_distance(float &near, float &far) const
+{
+    near = this->near;
+    far = this->far;
+}
+
 void Camera::set_size_ratio(float ratio)
 {
     this->size_ratio = ratio;

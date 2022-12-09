@@ -241,7 +241,11 @@ void Mesh::draw(Shader &program) const
         }
     }
     glBindVertexArray(mVao);
-    glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, nullptr);
+    if (mIndices.size()) {
+        glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, nullptr);
+    } else {
+        glDrawArrays(GL_TRIANGLES, 0, mVertexData.size());
+    }
     glBindVertexArray(0);
     glActiveTexture(0);
 }

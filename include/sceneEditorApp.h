@@ -6,6 +6,7 @@
 #include "camera.h"
 #include "model.h"
 #include "shader.h"
+#include "skyBox.h"
 
 class Mesh;
 
@@ -28,6 +29,7 @@ private:
     Model m_model;
     Shader m_shader;
     std::shared_ptr<Mesh> m_mesh;
+    SkyBox m_skybox;
 };
 
 #endif

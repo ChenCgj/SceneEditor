@@ -28,6 +28,7 @@ protected:
     virtual void dealKeyUp(SDL_Keycode key);
     virtual void dealWinSizeChange(const std::pair<int, int> &size);
     virtual void dealOther(const SDL_Event *pe);
+    std::pair<int, int> getWindowSize() const;
     /**
     * @return keys which are pressed
     */
@@ -35,6 +36,7 @@ protected:
     bool leftButtonPressed() const;
     bool rightButtonPressed() const;
     bool middleButtonPressed() const;
+    bool altKeyPressed() const;
 private:
     void dealEvent(SDL_Event *e);
     std::unordered_set<SDL_Keycode> m_keyStatus;

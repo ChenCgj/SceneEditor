@@ -4,6 +4,7 @@
 #include "texture_manager.h"
 #include "debug.h"
 using std::string;
+using std::vector;
 
 static char *load_image_data(const string &image, int &width, int &height, int &pitch)
 {
@@ -91,6 +92,59 @@ GLuint Texture_manager::load_texture(GLenum texture_type, const string &image, G
 
     delete []buf;
 
+    return id;
+}
+
+GLuint Texture_manager::load_cube_texture(const std::vector<std::string> &sky_img)
+{
+    int id_temp = texture_map[max_texture - 1].first;
+    GLenum type_temp = texture_map[max_texture - 1].second;
+
+    GLuint id;
+    glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &id);
+    if (id == 0) {
+        ERRINFO("Create texture fail.");
+        return 0;
+    }
+    glActiveTexture(GL_TEXTURE0 + max_texture - 1);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, id);
+
+    for (vector<string>::size_type i = 0; i < sky_img.size(); ++i) {
+        // auto *data = load_image_data(sky_img[i], width, height, pitch); // this will flip the image, but the cube image seems not need
+        SDL_Surface *img = IMG_Load(sky_img[i].c_str());
+        if (img == nullptr) {
+            glBindTexture(type_temp, id_temp);
+            glDeleteTextures(1, &id);
+            ERRINFO("load image %s fail. SDL_Image: %s", sky_img[i].c_str(), IMG_GetError());
+            return 0;
+        }
+        auto data = img->pixels;
+        int width, height, pitch;
+        width = img->w;
+        height = img->h;
+        pitch = img->pitch;
+        GLenum form, form_to;
+        int depth = pitch / width;
+        if (depth == 1) {
+            form = GL_RED;
+            form_to = GL_COMPRESSED_RED;
+        } else if (depth == 3) {
+            form = GL_RGB;
+            form_to = GL_COMPRESSED_RGB;
+        } else if (depth == 4) {
+            form = GL_RGBA;
+            form_to = GL_COMPRESSED_RGBA;
+        }
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, form_to, width, height, 0, form, GL_UNSIGNED_BYTE, data);
+        SDL_FreeSurface(img);
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    glBindTexture(type_temp, id_temp);
     return id;
 }
 

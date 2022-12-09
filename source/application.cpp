@@ -15,7 +15,7 @@ Application::Application(const string &title, int width, int height, bool fullSc
         flag |= SDL_WINDOW_FULLSCREEN;
     }
     if ((m_pWnd = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-                              width, height, flag | SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN)) == nullptr) {
+                              width, height, flag | SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE)) == nullptr) {
         ERRINFO("Create window fail. SDL: %s", SDL_GetError());
         return;
     }
@@ -147,6 +147,13 @@ void Application::dealOther(const SDL_Event *pe)
     // DBGINFO(__func__);
 }
 
+pair<int, int> Application::getWindowSize() const
+{
+    int w, h;
+    SDL_GetWindowSize(m_pWnd, &w, &h);
+    return make_pair(w, h);
+}
+
 const unordered_set<SDL_Keycode> &Application::keyBoardStatu() const
 {
     return m_keyStatus;
@@ -165,6 +172,11 @@ bool Application::rightButtonPressed() const
 bool Application::middleButtonPressed() const
 {
     return m_mouseStatus[k_btnMiddle];
+}
+
+bool Application::altKeyPressed() const
+{
+    return SDL_GetModState() & KMOD_ALT;
 }
 
 Application::~Application()
