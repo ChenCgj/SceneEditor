@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 #include "debug.h"
 #include "mesh.h"
 #include "texture_manager.h"
@@ -24,7 +25,7 @@ static aiTextureType types[] = {
     aiTextureType_DISPLACEMENT, aiTextureType_LIGHTMAP, aiTextureType_REFLECTION, aiTextureType_UNKNOWN
 };
 
-Mesh::Mesh() : mVb(0), mVao(0), mVeb(0)
+Mesh::Mesh() : mVb(0), mVao(0), mVeb(0), m_baseMatrix(1.0), m_transformMatrix(1.0)
 {
     glGenBuffers(1, &mVb);
     glGenBuffers(1, &mVeb);
@@ -92,29 +93,52 @@ bool Mesh::loadData(const vector<float> &verties, const vector<float> &normal, c
                     const vector<float> &tangent, const vector<float> &bitangent, const vector<GLuint> &indies)
 {
     unLoadData();
-    int sv = sizeof(Vertex::pos) / sizeof(float), sn = sizeof(Vertex::normal) / sizeof(float), sc = sizeof(Vertex::color) / sizeof(float);
-    int suv = sizeof(Vertex::uv) / sizeof(float), st = sizeof(Vertex::tangent) / sizeof(float), sb = sizeof(Vertex::bitangent) / sizeof(float);
-    int vertexSize = verties.size() / sv;
-    int sizen = normal.size() / sn;
-    int sizec = color.size() / sc;
-    int sizeuv = uv.size() / suv;
-    int sizet = tangent.size() / st;
-    int sizeb = bitangent.size() / sb;
-    if ((sizen != vertexSize && sizen) || (sizec != vertexSize && sizec) ||
-         (sizeuv != vertexSize && sizeuv) || (sizet != vertexSize && sizet) || (sizeb != vertexSize && sizeb)) {
-        return false;
+    int nVert = verties.size() * sizeof(verties[0]) / sizeof(mVertexData.m_pos[0]);
+    int nNorm = normal.size() * sizeof(verties[0]) / sizeof(mVertexData.m_normal[0]);
+    int nColor = color.size() * sizeof(color[0]) / sizeof(mVertexData.m_color[0]);
+    int nUv = uv.size() * sizeof(uv[0]) / sizeof(mVertexData.m_uv[0]);
+    int nTangent = tangent.size() * sizeof(tangent[0]) / sizeof(mVertexData.m_tangent[0]);
+    int nBitangent = bitangent.size() * sizeof(bitangent[0]) / sizeof(mVertexData.m_bitangent[0]);
+    mVertexData.m_pos.resize(nVert);
+    memcpy(&mVertexData.m_pos[0], &verties[0], nVert * sizeof(mVertexData.m_pos[0]));
+    if (nNorm == nVert) {
+        mVertexData.m_hasNormal = true;
+        mVertexData.m_normal.resize(nVert);
+        memcpy(&mVertexData.m_normal[0], &normal[0], nVert * sizeof(mVertexData.m_normal[0]));
     }
-    mVertexData.resize(vertexSize);
-    Vertex zeroMem = {{}, {}, {}, {}, {}, {}};
-    for (int i = 0; i < vertexSize; ++i) {
-        memcpy(mVertexData[i].pos, &verties[i * sv], sv * sizeof(float));
-        memcpy(mVertexData[i].normal, i < sizen ? &normal[i * sn] : zeroMem.normal, sn * sizeof(float));
-        memcpy(mVertexData[i].color, i < sizec ? &color[i * sc] : zeroMem.color, sc * sizeof(float));
-        memcpy(mVertexData[i].uv, i < sizeuv ? &uv[i * suv] : zeroMem.uv, suv * sizeof(float));
-        memcpy(mVertexData[i].tangent, i < sizet ? &tangent[i * st] : zeroMem.tangent, st * sizeof(float));
-        memcpy(mVertexData[i].bitangent, i < sizeb ? &bitangent[i * sb] : zeroMem.bitangent, sb * sizeof(float));
+    if (nColor == nVert) {
+        mVertexData.m_hasColor = true;
+        mVertexData.m_color.resize(nVert);
+        memcpy(&mVertexData.m_color[0], &color[0], nVert * sizeof(mVertexData.m_color[0]));
     }
-    mIndices = indies;
+    if (nUv == nVert) {
+        mVertexData.m_hasUV = true;
+        mVertexData.m_uv.resize(nVert);
+        memcpy(&mVertexData.m_uv[0], &uv[0], nVert * sizeof(mVertexData.m_uv[0]));
+    }
+    mVertexData.m_hasTangent = mVertexData.m_hasBitangent = false;
+    if (indies.size() == 0) {
+        mIndices.resize(nVert);
+        int index = 0;
+        std::generate(mIndices.begin(), mIndices.end(), [&](){return index++;});
+    } else {
+        mIndices = indies;
+    }
+    if (!mVertexData.m_hasNormal) {
+        mVertexData.m_hasNormal = true;
+        mVertexData.m_normal = std::vector<glm::vec3>(nVert, glm::vec3{0, 0, 0});
+        std::vector<int> faceCount(nVert, 0);
+        for (unsigned int i = 0; i + 2 < mIndices.size(); i += 3) {
+            GLuint index[] = {mIndices[i], mIndices[i + 1], mIndices[i + 2]};
+            // calcuate the normal
+            glm::vec3 fnormal = glm::cross(mVertexData.m_pos[index[1]] - mVertexData.m_pos[index[0]], mVertexData.m_pos[index[2]] - mVertexData.m_pos[index[0]]);
+            fnormal = glm::normalize(fnormal);
+            for (auto j : index) {
+                mVertexData.m_normal[j] = (mVertexData.m_normal[j] * static_cast<float>(faceCount[j]) + fnormal) / static_cast<float>(faceCount[j] + 1);
+                faceCount[j]++;
+            }
+        }
+    }
     return bindData();
 }
 
@@ -129,54 +153,25 @@ bool Mesh::loadData(const aiMesh *mesh, const aiScene *scene, unordered_map<std:
             loadTexture(types[i], material, mTex[i], textureMap, baseDir);
         }
     }
-    mVertexData.resize(mesh->mNumVertices);
-    for (unsigned i = 0; i < mesh->mNumVertices; ++i) {
-        mVertexData[i].pos[0] = mesh->mVertices[i].x;
-        mVertexData[i].pos[1] = mesh->mVertices[i].y;
-        mVertexData[i].pos[2] = mesh->mVertices[i].z;
-        if (i == 0) {
-            mRangeX = make_pair(mVertexData[i].pos[0], mVertexData[i].pos[0]);
-            mRangeY = make_pair(mVertexData[i].pos[1], mVertexData[i].pos[1]);
-            mRangeZ = make_pair(mVertexData[i].pos[2], mVertexData[i].pos[2]);
-        } else {
-            saveRange(mRangeX, mVertexData[i].pos[0]);
-            saveRange(mRangeY, mVertexData[i].pos[1]);
-            saveRange(mRangeZ, mVertexData[i].pos[2]);
-        }
-
-        if (mesh->HasNormals()) {
-            mVertexData[i].normal[0] = mesh->mNormals[i].x;
-            mVertexData[i].normal[1] = mesh->mNormals[i].y;
-            mVertexData[i].normal[2] = mesh->mNormals[i].z;
-        } else {
-            mVertexData[i].normal[0] = 0.0f;
-            mVertexData[i].normal[1] = 0.0f;
-            mVertexData[i].normal[2] = 0.0f;
-        }
-
-        mVertexData[i].color[0] = color[0];
-        mVertexData[i].color[1] = color[1];
-        mVertexData[i].color[2] = color[2];
-        if (mesh->HasTextureCoords(0)) {
-            mVertexData[i].uv[0] = mesh->mTextureCoords[0][i].x;
-            mVertexData[i].uv[1] = mesh->mTextureCoords[0][i].y;
-            // mVertexData[i].tangent[0] = mesh->mTangents[i].x;
-            // mVertexData[i].tangent[1] = mesh->mTangents[i].y;
-            // mVertexData[i].tangent[2] = mesh->mTangents[i].z;
-            // mVertexData[i].bitangent[0] = mesh->mBitangents[i].x;
-            // mVertexData[i].bitangent[1] = mesh->mBitangents[i].y;
-            // mVertexData[i].bitangent[2] = mesh->mBitangents[i].z;
-        } else {
-            mVertexData[i].uv[0] = 0.0f;
-            mVertexData[i].uv[1] = 0.0f;
-            mVertexData[i].tangent[0] = 0.0f;
-            mVertexData[i].tangent[1] = 0.0f;
-            mVertexData[i].tangent[2] = 0.0f;
-            mVertexData[i].bitangent[0] = 0.0f;
-            mVertexData[i].bitangent[1] = 0.0f;
-            mVertexData[i].bitangent[2] = 0.0f;
-        }
+    mVertexData.m_pos.resize(mesh->mNumVertices);
+    memcpy(&mVertexData.m_pos[0], mesh->mVertices, mesh->mNumVertices * sizeof(mVertexData.m_pos[0]));
+    mVertexData.m_hasColor = true;
+    mVertexData.m_color = vector<glm::vec3>(mesh->mNumVertices, glm::vec3(color[0], color[1], color[2]));
+    if (mesh->HasNormals()) {
+        mVertexData.m_hasNormal = true;
+        mVertexData.m_normal.resize(mesh->mNumVertices);
+        memcpy(&mVertexData.m_normal[0], mesh->mNormals, mesh->mNumVertices * sizeof(mVertexData.m_normal[0]));
+    } else {
+        mVertexData.m_hasNormal = false;
     }
+    if (mesh->HasTextureCoords(0)) {
+        mVertexData.m_hasUV = true;
+        mVertexData.m_uv.resize(mesh->mNumVertices);
+        memcpy(&mVertexData.m_uv[0], mesh->mTextureCoords[0], mesh->mNumVertices * sizeof(mVertexData.m_uv[0]));
+    } else {
+        mVertexData.m_hasUV = false;
+    }
+    mVertexData.m_hasTangent = mVertexData.m_hasBitangent = false;
 
     for (unsigned i = 0; i < mesh->mNumFaces; ++i) {
         const aiFace &f = mesh->mFaces[i];
@@ -185,6 +180,21 @@ bool Mesh::loadData(const aiMesh *mesh, const aiScene *scene, unordered_map<std:
         }
     }
     return bindData();
+}
+
+void Mesh::setBaseMatrix(const glm::mat4 &mat)
+{
+    m_baseMatrix = mat;
+}
+
+glm::mat4 Mesh::baseMatrix() const
+{
+    return m_baseMatrix;
+}
+
+void Mesh::setTransformMatrix(const glm::mat4 &mat)
+{
+    m_transformMatrix = mat;
 }
 
 void Mesh::addTexture(TextureType type, GLuint texID)
@@ -197,22 +207,38 @@ bool Mesh::bindData()
     if (!mVb || !mVeb || !mVao) {
         return false;
     }
-    glBindBuffer(GL_ARRAY_BUFFER, mVb);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * mVertexData.size(), &mVertexData[0], GL_STATIC_DRAW);
+    int nVert = mVertexData.m_pos.size();
+    unsigned int totalSize = sizeof(mVertexData.m_pos[0]) * nVert +
+                             sizeof(mVertexData.m_normal[0]) * nVert * mVertexData.m_hasNormal +
+                             sizeof(mVertexData.m_color[0]) * nVert * mVertexData.m_hasColor +
+                             sizeof(mVertexData.m_uv[0]) * nVert * mVertexData.m_hasUV +
+                             sizeof(mVertexData.m_tangent[0]) * nVert * mVertexData.m_hasTangent +
+                             sizeof(mVertexData.m_bitangent[0]) * nVert * mVertexData.m_hasBitangent;
 
+    unsigned int offset = 0;
+    GLuint attribPos = 0;
+
+    glBindBuffer(GL_ARRAY_BUFFER, mVb);
+    glBufferData(GL_ARRAY_BUFFER, totalSize, nullptr, GL_STATIC_DRAW);
     glBindVertexArray(mVao);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), nullptr);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void *>(offsetof(Vertex, normal)));
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void *>(offsetof(Vertex, color)));
-    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void *>(offsetof(Vertex, uv)));
-    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void *>(offsetof(Vertex, tangent)));
-    glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<void *>(offsetof(Vertex, bitangent)));
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-    glEnableVertexAttribArray(3);
-    glEnableVertexAttribArray(4);
-    glEnableVertexAttribArray(5);
+
+#define LOAD_ATTRIB(cond, firstEle) do {\
+        if ((cond)) {\
+            glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(firstEle) * nVert, &firstEle);\
+            glVertexAttribPointer(attribPos, sizeof(firstEle) / sizeof(float), GL_FLOAT, GL_FALSE, sizeof(firstEle), reinterpret_cast<void *>(offset));\
+            glEnableVertexAttribArray(attribPos);\
+            offset += sizeof(firstEle) * nVert;\
+        }\
+        ++attribPos;\
+    } while(0)
+
+    LOAD_ATTRIB(true, mVertexData.m_pos[0]);
+    LOAD_ATTRIB(mVertexData.m_hasNormal, mVertexData.m_normal[0]);
+    LOAD_ATTRIB(mVertexData.m_hasColor, mVertexData.m_color[0]);
+    LOAD_ATTRIB(mVertexData.m_hasUV, mVertexData.m_uv[0]);
+    LOAD_ATTRIB(mVertexData.m_hasTangent, mVertexData.m_tangent[0]);
+    LOAD_ATTRIB(mVertexData.m_hasBitangent, mVertexData.m_bitangent[0]);
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mVeb);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * mIndices.size(), &mIndices[0], GL_STATIC_DRAW);
     glBindVertexArray(0);
@@ -225,7 +251,17 @@ bool Mesh::bindData()
 
 void Mesh::unLoadData()
 {
-    mVertexData.clear();
+    mVertexData.m_pos.clear();
+    mVertexData.m_normal.clear();
+    mVertexData.m_color.clear();
+    mVertexData.m_uv.clear();
+    mVertexData.m_tangent.clear();
+    mVertexData.m_bitangent.clear();
+    mVertexData.m_hasNormal = false;
+    mVertexData.m_hasColor = false;
+    mVertexData.m_hasUV = false;
+    mVertexData.m_hasTangent = false;
+    mVertexData.m_hasBitangent = false;
     mIndices.clear();
     for (int i = 0; i < k_texTypeCount; ++i) {
         mTex[i].clear();
@@ -240,12 +276,9 @@ void Mesh::draw(Shader &program) const
             TEX_MGR->bind_texture(program, GL_TEXTURE_2D, m_texName[i] + to_string(j + 1), mTex[i][j]);
         }
     }
+    program.set_uniform("mmodel", m_transformMatrix * m_baseMatrix);
     glBindVertexArray(mVao);
-    if (mIndices.size()) {
-        glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, nullptr);
-    } else {
-        glDrawArrays(GL_TRIANGLES, 0, mVertexData.size());
-    }
+    glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
     glActiveTexture(0);
 }
@@ -258,6 +291,7 @@ void Mesh::instanceDraw(Shader &program, int ninstance) const
             TEX_MGR->bind_texture(program, GL_TEXTURE_2D, m_texName[i] + to_string(j + 1), mTex[i][j]);
         }
     }
+    program.set_uniform("mmodel", m_transformMatrix * m_baseMatrix);
     glBindVertexArray(mVao);
     glDrawElementsInstanced(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, nullptr, ninstance);
     glBindVertexArray(0);

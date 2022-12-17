@@ -94,7 +94,7 @@ static Node *getNode(const aiNode *node, const aiScene *scene, std::unordered_ma
     return ret;
 }
 
-Model::Model() : modelMatrix(1.0f), baseMatrix(1.0f), mNode(nullptr) {}
+Model::Model() : m_transformMatrix(1.0f), m_baseMatrix(1.0f), mNode(nullptr) {}
 
 bool Model::loadModel()
 {
@@ -171,7 +171,7 @@ void Model::unload()
 
 void Model::draw(Shader &program) const
 {
-    program.set_uniform("mmodel", modelMatrix * baseMatrix);
+    // program.set_uniform("mmodel", modelMatrix * baseMatrix);
     drawNode(mNode, program);
 }
 
@@ -188,6 +188,7 @@ void Model::drawNode(const Node *pnode, Shader &program) const
     }
     queue<const Node *> nodeq;
     nodeq.push(pnode);
+    auto mmodel = m_transformMatrix * m_baseMatrix;
     while (!nodeq.empty()) {
         int size = nodeq.size();
         for (int i = 0; i < size; ++i) {
@@ -197,6 +198,7 @@ void Model::drawNode(const Node *pnode, Shader &program) const
                 nodeq.push(pn);
             }
             for (const auto pm : n->meshes) {
+                pm->setTransformMatrix(mmodel);
                 pm->draw(program);
             }
         }
@@ -207,6 +209,7 @@ void Model::instanceDrawNode(const Node *pnode, Shader &program, int ninstance) 
 {
     queue<const Node *> nodeq;
     nodeq.push(pnode);
+    auto mmodel = m_transformMatrix * m_baseMatrix;
     while (!nodeq.empty()) {
         int size = nodeq.size();
         for (int i = 0; i < size; ++i) {
@@ -216,6 +219,7 @@ void Model::instanceDrawNode(const Node *pnode, Shader &program, int ninstance) 
                 nodeq.push(pn);
             }
             for (const auto pm : n->meshes) {
+                pm->setTransformMatrix(mmodel);
                 pm->instanceDraw(program, ninstance);
             }
         }
@@ -224,15 +228,15 @@ void Model::instanceDrawNode(const Node *pnode, Shader &program, int ninstance) 
 
 void Model::setTranslateMatrix(const glm::mat4 &matrix)
 {
-    modelMatrix = matrix;
+    m_transformMatrix = matrix;
 }
 
 void Model::setBaseMatrix(const glm::mat4 &matrix)
 {
-    baseMatrix = matrix;
+    m_baseMatrix = matrix;
 }
 
 const glm::mat4 &Model::getBaseMatrix() const
 {
-    return baseMatrix;
+    return m_baseMatrix;
 }

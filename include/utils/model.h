@@ -26,8 +26,8 @@ public:
     void getModelSize(double &w, double &h, double &d);
     void setInstanceAttrib(GLuint buffer, GLint attrib_pos, GLsizei attrib_size, GLenum type, GLuint size, void *offset, GLuint divide);
 private:
-    glm::mat4 modelMatrix;
-    glm::mat4 baseMatrix;
+    glm::mat4 m_transformMatrix;
+    glm::mat4 m_baseMatrix;
     void drawNode(const Node *pnode, Shader &program) const;
     void instanceDrawNode(const Node *pnode, Shader &program, int ninstance) const;
     Node *mNode;

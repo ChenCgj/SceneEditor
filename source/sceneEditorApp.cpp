@@ -10,6 +10,7 @@
 using glm::vec3;
 using glm::vec4;
 using glm::mat4;
+using std::vector;
 using std::make_shared;
 using glm::radians;
 using glm::scale;
@@ -18,22 +19,13 @@ using glm::normalize;
 
 static void initOpengl();
 
-SceneEditorApp::SceneEditorApp(int width, int height) : Application{"Scene Editor", width, height},
-        m_skybox{{
-            "..\\resource\\skyBox1\\sky_right.png",
-            "..\\resource\\skyBox1\\sky_left.png",
-            "..\\resource\\skyBox1\\sky_top.png",
-            "..\\resource\\skyBox1\\sky_bottom.png",
-            "..\\resource\\skyBox1\\sky_front.png",
-            "..\\resource\\skyBox1\\sky_back.png",
-        }}
+SceneEditorApp::SceneEditorApp(int width, int height) : Application{"Scene Editor", width, height}, m_skybox{}
 {
     initOpengl();
     glViewport(0, 0, width, height);
     m_camera.set_size_ratio(width * 1.0 / height);
     m_camera.set_pos(vec3{0.0, 0.0, 5.0}, vec3{0, 0, 0});
     m_camera.set_distance(0.1, 1000);
-    m_mesh = make_shared<Mesh>();
 
     if (!m_shader.generate_program({"..\\resource\\shader\\vert.glsl"}, {"..\\resource\\shader\\frag.glsl"})) {
         ERRINFO("generate shader fail.");
@@ -42,16 +34,34 @@ SceneEditorApp::SceneEditorApp(int width, int height) : Application{"Scene Edito
         ERRINFO("Load model %s%s fail.", SDL_GetBasePath(), "..\\resource\\model\\cornell_box.obj");
     }
     m_model.setBaseMatrix(scale(mat4(1.0), vec3(0.001, 0.001, 0.001)));
+
+    m_skybox.loadTexture({
+            "..\\resource\\skyBox1\\sky_right.png",
+            "..\\resource\\skyBox1\\sky_left.png",
+            "..\\resource\\skyBox1\\sky_top.png",
+            "..\\resource\\skyBox1\\sky_bottom.png",
+            "..\\resource\\skyBox1\\sky_front.png",
+            "..\\resource\\skyBox1\\sky_back.png",
+    });
+
+    m_mesh = make_shared<Mesh>();
+    vector<float> verties = {
+        0, 0.5, 0,
+        -0.5, -0.5, 0,
+        0.5, -0.5, 0
+    };
+    vector<float> color = {
+        1, 0, 0,
+        0, 1, 0,
+        0, 0, 1
+    };
+    m_mesh->loadData(verties, {}, color);
 }
 
 bool SceneEditorApp::render()
 {
     glClearColor(0.3, 0.4, 0.2, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // glDepthMask(GL_FALSE);
-    // glDepthMask(GL_TRUE);
-
     if (!m_shader.valid()) {
         ERRINFO("Shader invalid.");
         return false;
@@ -65,8 +75,8 @@ bool SceneEditorApp::render()
         ERRINFO("Set uniform variable %s fail.", "mproj");
         return false;
     }
+    m_mesh->draw(m_shader);
     m_model.draw(m_shader);
-
     m_skybox.draw(m_camera.get_camera_matrix(), m_camera.get_project_matrix());
     return true;
 }

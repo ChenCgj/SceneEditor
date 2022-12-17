@@ -46,12 +46,13 @@ Texture_manager *Texture_manager::instance()
     return &inst;
 }
 
-GLuint Texture_manager::load_texture(GLenum texture_type, const string &image, GLenum min_filter, GLenum mag_filter, GLenum wrap_s, GLenum wrap_t, float r, float g, float b, float a)
+bool Texture_manager::reload_texture(GLuint id, GLenum texture_type, const std::string &image, GLenum min_filter, GLenum mag_filter, GLenum wrap_s, GLenum wrap_t, float r, float g, float b, float a)
 {
-    // if (glCompressedTexImage2D())
-
     int width, height, pitch;
     auto buf = load_image_data(image, width, height, pitch);
+    if (buf == nullptr) {
+        return false;
+    }
     GLenum form, form_to;
     int depth = pitch / width;
     if (depth == 1) {
@@ -68,13 +69,6 @@ GLuint Texture_manager::load_texture(GLenum texture_type, const string &image, G
     int id_temp = texture_map[max_texture - 1].first;
     GLenum type_temp = texture_map[max_texture - 1].second;
 
-    GLuint id;
-    glCreateTextures(texture_type, 1, &id);
-    if (id == 0) {
-        delete []buf;
-        ERRINFO("Create texture fail.");
-        return id;
-    }
     glActiveTexture(GL_TEXTURE0 + max_texture - 1);
     glBindTexture(texture_type, id);
     glTexImage2D(texture_type, 0, form_to, width, height, 0, form, GL_UNSIGNED_BYTE, buf);
@@ -91,21 +85,27 @@ GLuint Texture_manager::load_texture(GLenum texture_type, const string &image, G
     glBindTexture(type_temp, id_temp);
 
     delete []buf;
-
-    return id;
+    return true;
 }
 
-GLuint Texture_manager::load_cube_texture(const std::vector<std::string> &sky_img)
+GLuint Texture_manager::load_texture(GLenum texture_type, const string &image, GLenum min_filter, GLenum mag_filter, GLenum wrap_s, GLenum wrap_t, float r, float g, float b, float a)
 {
-    int id_temp = texture_map[max_texture - 1].first;
-    GLenum type_temp = texture_map[max_texture - 1].second;
-
-    GLuint id;
-    glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &id);
+    GLuint id = 0;
+    glCreateTextures(texture_type, 1, &id);
     if (id == 0) {
         ERRINFO("Create texture fail.");
         return 0;
     }
+    if (!reload_texture(id, texture_type, image, min_filter, mag_filter, wrap_s, wrap_t, r, g, b, a)) {
+        return 0;
+    }
+    return id;
+}
+
+bool Texture_manager::reload_cube_texture(GLuint id, const std::vector<std::string> &sky_img)
+{
+    int id_temp = texture_map[max_texture - 1].first;
+    GLenum type_temp = texture_map[max_texture - 1].second;
     glActiveTexture(GL_TEXTURE0 + max_texture - 1);
     glBindTexture(GL_TEXTURE_CUBE_MAP, id);
 
@@ -114,9 +114,8 @@ GLuint Texture_manager::load_cube_texture(const std::vector<std::string> &sky_im
         SDL_Surface *img = IMG_Load(sky_img[i].c_str());
         if (img == nullptr) {
             glBindTexture(type_temp, id_temp);
-            glDeleteTextures(1, &id);
             ERRINFO("load image %s fail. SDL_Image: %s", sky_img[i].c_str(), IMG_GetError());
-            return 0;
+            return false;
         }
         auto data = img->pixels;
         int width, height, pitch;
@@ -145,6 +144,21 @@ GLuint Texture_manager::load_cube_texture(const std::vector<std::string> &sky_im
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
     glBindTexture(type_temp, id_temp);
+    return true;
+}
+
+GLuint Texture_manager::load_cube_texture(const std::vector<std::string> &sky_img)
+{
+    GLuint id;
+    glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &id);
+    if (id == 0) {
+        ERRINFO("Create texture fail.");
+        return 0;
+    }
+    if (!reload_cube_texture(id, sky_img)) {
+        glDeleteTextures(1, &id);
+        return 0;
+    }
     return id;
 }
 

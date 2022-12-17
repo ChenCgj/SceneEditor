@@ -8,9 +8,10 @@
 
 class SkyBox {
 public:
-    SkyBox(const std::vector<std::string> &imgs);
+    SkyBox();
     ~SkyBox();
     bool draw(const glm::mat4 &mmview, const glm::mat4 &mproj);
+    bool loadTexture(const std::vector<std::string> &imgs);
 private:
     Shader m_shader;
     Mesh m_mesh;

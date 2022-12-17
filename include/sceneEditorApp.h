@@ -28,6 +28,7 @@ private:
     Camera m_camera;
     Model m_model;
     Shader m_shader;
+    // Shader m_testShader;
     std::shared_ptr<Mesh> m_mesh;
     SkyBox m_skybox;
 };

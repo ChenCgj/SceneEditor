@@ -2,7 +2,8 @@
 #define MESH_H
 
 #include <vector>
-#include "unordered_map"
+#include <unordered_map>
+#include "glm.hpp"
 #include "glad/glad.h"
 #include "assimp/mesh.h"
 #include "assimp/material.h"
@@ -18,8 +19,11 @@ public:
     };
     Mesh();
     bool loadData(const aiMesh *mesh, const aiScene *scene, std::unordered_map<std::string, GLuint> &textureMap, const std::string &baseDir);
-    bool loadData(const std::vector<float> &verties, const std::vector<float> &normal, const std::vector<float> &color, const std::vector<float> &uv,
-                  const std::vector<float> &tangent, const std::vector<float> &bitangent, const std::vector<GLuint> &indies);
+    bool loadData(const std::vector<float> &verties, const std::vector<float> &normal = {}, const std::vector<float> &color = {}, const std::vector<float> &uv = {},
+                  const std::vector<float> &tangent = {}, const std::vector<float> &bitangent = {}, const std::vector<GLuint> &indies = {});
+    void setBaseMatrix(const glm::mat4 &mat);
+    glm::mat4 baseMatrix() const;
+    void setTransformMatrix(const glm::mat4 &mat);
     void addTexture(TextureType type, GLuint texID);
     void unLoadData();
     void draw(Shader &program) const;
@@ -31,22 +35,26 @@ private:
     static constexpr int k_texTypeCount = k_texOther + 1;
     static const std::string m_texName[k_texTypeCount];
     struct Vertex {
-        float pos[3];
-        float normal[3];
-        float color[3];
-        float uv[2];
-        float tangent[3];
-        float bitangent[3];
+        std::vector<glm::vec3> m_pos;
+        bool m_hasNormal;
+        std::vector<glm::vec3> m_normal;
+        bool m_hasUV;
+        std::vector<glm::vec2> m_uv;
+        bool m_hasColor;
+        std::vector<glm::vec3> m_color;
+        bool m_hasTangent;
+        std::vector<glm::vec3> m_tangent;
+        bool m_hasBitangent;
+        std::vector<glm::vec3> m_bitangent;
     };
     bool bindData();
-    std::vector<Vertex> mVertexData;
+    Vertex mVertexData;
     std::vector<GLuint> mIndices;
-    // std::vector<GLuint> mTextureDiffuseID, mTextureSpecularID, mTextureNormalID, mTextureHeightID, mTextureReflectionID;
-    // std::vector<GLuint> mTextureColorID;
     std::vector<GLuint> mTex[k_texTypeCount];
     GLuint maxAttribPos;
     GLuint mVb, mVao, mVeb;
     std::pair<double, double> mRangeX, mRangeY, mRangeZ;
+    glm::mat4 m_baseMatrix, m_transformMatrix;
 };
 
 #endif

@@ -30,6 +30,7 @@ bool initSDL()
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8) < 0) {
         ERRINFO("Set opengl attribute fail. SDL: %s", SDL_GetError());
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
+        SDL_Quit();
         return false;
     }
     return true;

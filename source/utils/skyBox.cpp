@@ -7,9 +7,9 @@ using std::vector;
 using glm::mat4;
 using glm::mat3;
 
-SkyBox::SkyBox(const std::vector<std::string> &imgs) : m_texID(0)
+SkyBox::SkyBox() : m_texID(0)
 {
-    if (!m_shader.generate_program({"..\\resource\\shader\\skybox_vert.glsl"}, {"..\\resource\\shader\\skybox_frag.glsl"})) {
+    if (!m_shader.generate_program({"..\\resource\\shader\\skybox\\skybox_vert.glsl"}, {"..\\resource\\shader\\skybox\\skybox_frag.glsl"})) {
         ERRINFO("Generate skybox shader fail.");
         return;
     }
@@ -56,17 +56,27 @@ SkyBox::SkyBox(const std::vector<std::string> &imgs) : m_texID(0)
         -1.0f, -1.0f,  1.0f,
          1.0f, -1.0f,  1.0f
     };
-    if (!m_mesh.loadData(v, {}, {}, {}, {}, {}, {})) {
+    if (!m_mesh.loadData(v)) {
         ERRINFO("Load data fail.");
         m_shader.delete_program();
         return;
     }
-    if ((m_texID = Texture_manager::instance()->load_cube_texture(imgs)) == 0) {
-        ERRINFO("Load cube texture fail.");
-        m_shader.delete_program();
-        m_mesh.unLoadData();
-        return;
+}
+
+bool SkyBox::loadTexture(const std::vector<std::string> &imgs)
+{
+    if (m_texID == 0) {
+        if ((m_texID = Texture_manager::instance()->load_cube_texture(imgs)) == 0) {
+            ERRINFO("Load cube texture fail.");
+            return false;
+        }
+    } else {
+        if (!Texture_manager::instance()->reload_cube_texture(m_texID, imgs)) {
+            ERRINFO("Load cube texture fail.");
+            return false;
+        }
     }
+    return true;
 }
 
 bool SkyBox::draw(const glm::mat4 &mview, const glm::mat4 &mproj)
