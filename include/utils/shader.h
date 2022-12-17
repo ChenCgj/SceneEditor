@@ -7,6 +7,7 @@
 class Shader {
 public:
     Shader();
+    ~Shader();
     void setTransformFeedBackVaryings(std::vector<const char *> varyings, GLenum type);
     bool generate_program(const std::vector<std::string> &vert_src, const std::vector<std::string> &frag_src, const std::vector<std::string> &geometry_src = {});
     void delete_program();

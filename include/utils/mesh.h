@@ -30,8 +30,10 @@ public:
     void instanceDraw(Shader &program, int ninstance) const;
     void getMeshRange(std::pair<double, double> &rx, std::pair<double, double> &ry, std::pair<double, double> &rz);
     void setInstanceAttrib(GLuint buffer, GLint attrib_pos, GLsizei attrib_size, GLenum type, GLuint size, void *offset, GLuint divide);
+    void enableSetShader(bool flag);
     ~Mesh();
 private:
+    bool setShaderParam(Shader &shader) const;
     static constexpr int k_texTypeCount = k_texOther + 1;
     static const std::string m_texName[k_texTypeCount];
     struct Vertex {
@@ -39,7 +41,7 @@ private:
         bool m_hasNormal;
         std::vector<glm::vec3> m_normal;
         bool m_hasUV;
-        std::vector<glm::vec2> m_uv;
+        std::vector<glm::vec3> m_uv;
         bool m_hasColor;
         std::vector<glm::vec3> m_color;
         bool m_hasTangent;
@@ -48,6 +50,7 @@ private:
         std::vector<glm::vec3> m_bitangent;
     };
     bool bindData();
+    void generateNormal();
     Vertex mVertexData;
     std::vector<GLuint> mIndices;
     std::vector<GLuint> mTex[k_texTypeCount];
@@ -55,6 +58,7 @@ private:
     GLuint mVb, mVao, mVeb;
     std::pair<double, double> mRangeX, mRangeY, mRangeZ;
     glm::mat4 m_baseMatrix, m_transformMatrix;
+    bool m_enableSetShader;
 };
 
 #endif

@@ -19,7 +19,7 @@ using glm::normalize;
 
 static void initOpengl();
 
-SceneEditorApp::SceneEditorApp(int width, int height) : Application{"Scene Editor", width, height}, m_skybox{}, m_pointLight(vec3{0, 0, 5}, 1, 0.1, 0.1)
+SceneEditorApp::SceneEditorApp(int width, int height) : Application{"Scene Editor", width, height}
 {
     initOpengl();
     glViewport(0, 0, width, height);
@@ -27,15 +27,18 @@ SceneEditorApp::SceneEditorApp(int width, int height) : Application{"Scene Edito
     m_camera.set_pos(vec3{0.0, 0.0, 5.0}, vec3{0, 0, 0});
     m_camera.set_distance(0.1, 1000);
 
-    if (!m_shader.generate_program({"..\\resource\\shader\\vert.glsl"}, {"..\\resource\\shader\\frag.glsl"})) {
-        ERRINFO("generate shader fail.");
+    m_model = make_shared<Model>();
+    // if (!m_model->loadModel("..\\resource\\models\\mark\\mark.obj")) {
+    // if (!m_model->loadModel("..\\resource\\models\\Humvee_models\\Humvee.obj")) {
+    // if (!m_model->loadModel("..\\resource\\models\\mustang_gt\\Textures\\mustang_GT.obj")) {
+    // if (!m_model->loadModel("..\\resource\\models\\face\\face.obj")) {
+    // if (!m_model.loadModel("..\\resource\\models\\cornell_box.obj")) {
+    if (!m_model->loadModel("..\\resource\\models\\low_poly_tree\\Lowpoly_tree_sample.obj")) {
+        ERRINFO("Load model %s%s fail.", SDL_GetBasePath(), "..\\resource\\model\\mark\\mark.obj");
     }
-    if (!m_model.loadModel("..\\resource\\models\\cornell_box.obj")) {
-        ERRINFO("Load model %s%s fail.", SDL_GetBasePath(), "..\\resource\\model\\cornell_box.obj");
-    }
-    m_model.setBaseMatrix(scale(mat4(1.0), vec3(0.001, 0.001, 0.001)));
 
-    m_skybox.loadTexture({
+    m_skyBox = make_shared<SkyBox>();
+    m_skyBox->loadTexture({
             "..\\resource\\skyBox1\\sky_right.png",
             "..\\resource\\skyBox1\\sky_left.png",
             "..\\resource\\skyBox1\\sky_top.png",
@@ -46,49 +49,38 @@ SceneEditorApp::SceneEditorApp(int width, int height) : Application{"Scene Edito
 
     m_mesh = make_shared<Mesh>();
     vector<float> verties = {
-        0, 0.5, 0,
-        -0.5, -0.5, 0,
-        0.5, -0.5, 0
+        1, 1, 0,
+        0, 1, 0,
+        0, 0, 0,
+        1, 0, 0
     };
     vector<float> color = {
         1, 0, 0,
         0, 1, 0,
-        0, 0, 1
+        0, 0, 1,
+        0, 1, 1
     };
-    m_mesh->loadData(verties, {}, color);
+    vector<float> uv = {
+        1, 1, 0,
+        0, 1, 0,
+        0, 0, 0,
+        1, 0, 0
+    };
+    m_mesh->loadData(verties, {}, color, uv, {}, {}, {0, 1, 2, 2, 3, 0});
+    int id = Texture_manager::instance()->load_texture(GL_TEXTURE_2D, "..\\resource\\models\\face\\face.png");
+    m_mesh->addTexture(Mesh::k_texDiffuse, id);
+
+    m_light = std::make_shared<PointLight>(vec3(0, 0, 5), 1, 0.01, 0.0001);
+
+    m_renderer.addMesh(m_mesh);
+    m_renderer.addModel(m_model);
+    m_renderer.addLight(m_light);
+    m_renderer.setSkyBox(m_skyBox);
 }
 
 bool SceneEditorApp::render()
 {
-    glClearColor(0.3, 0.4, 0.2, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    if (!m_shader.valid()) {
-        ERRINFO("Shader invalid.");
-        return false;
-    }
-    m_shader.use_program();
-    if (!m_shader.set_uniform("mview", m_camera.get_camera_matrix())) {
-        ERRINFO("Set uniform variable %s fail.", "mview");
-        return false;
-    }
-    if (!m_shader.set_uniform("mproj", m_camera.get_project_matrix())) {
-        ERRINFO("Set uniform variable %s fail.", "mproj");
-        return false;
-    }
-    if (!m_shader.set_uniform("pointLightCount", 1u)) {
-        ERRINFO("Set uniform variable %s fail.", "pointLightCount");
-        return false;
-    }
-    if (!m_shader.set_uniform("viewPos", m_camera.get_pos())) {
-        ERRINFO("Set uniform variable %s fail.", "viewPos");
-        return false;
-    }
-    if (!m_pointLight.applyToShader(m_shader, 0)) {
-        return false;
-    }
-    m_mesh->draw(m_shader);
-    m_model.draw(m_shader);
-    m_skybox.draw(m_camera.get_camera_matrix(), m_camera.get_project_matrix());
+    m_renderer.render(m_camera);
     return true;
 }
 
@@ -167,7 +159,7 @@ void SceneEditorApp::dealKeyDown(SDL_Keycode key)
         move[1] += 0.2;
     }
     m_camera.move(move);
-    m_pointLight.setPos(m_camera.get_pos());
+    m_light->setPos(m_camera.get_pos());
 }
 
 // void SceneEditorApp::dealKeyUp(SDL_Keycode key)
@@ -188,8 +180,7 @@ void SceneEditorApp::dealWinSizeChange(const std::pair<int, int> &size)
 
 SceneEditorApp::~SceneEditorApp()
 {
-    m_shader.delete_program();
-    m_mesh->unLoadData();
+
 }
 
 void initOpengl()

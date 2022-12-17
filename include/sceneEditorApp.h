@@ -8,6 +8,7 @@
 #include "shader.h"
 #include "skyBox.h"
 #include "light.h"
+#include "renderer.h"
 
 class Mesh;
 
@@ -27,12 +28,11 @@ protected:
     // void dealOther(const SDL_Event *pe) override;
 private:
     Camera m_camera;
-    Model m_model;
-    Shader m_shader;
-    // Shader m_testShader;
+    Renderer m_renderer;
     std::shared_ptr<Mesh> m_mesh;
-    SkyBox m_skybox;
-    PointLight m_pointLight;
+    std::shared_ptr<Model> m_model;
+    std::shared_ptr<PointLight> m_light;
+    std::shared_ptr<SkyBox> m_skyBox;
 };
 
 #endif

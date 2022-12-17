@@ -15,6 +15,7 @@ struct Node;
 class Model {
 public:
     Model();
+    ~Model();
     bool loadModel(const std::string &filename);
     bool loadModel();
     void unload();

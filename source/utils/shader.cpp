@@ -15,6 +15,7 @@ template bool Shader::set_uniform<int>(const std::string &name, const int &value
 template bool Shader::set_uniform<unsigned int>(const std::string &name, const unsigned int &value);
 template bool Shader::set_uniform<float>(const std::string &name, const float &value);
 template bool Shader::set_uniform<glm::mat4>(const std::string &name, const glm::mat4 &value);
+template bool Shader::set_uniform<bool>(const std::string &name, const bool &value);
 
 static void set_uniform(GLint location, const std::vector<int> &value);
 static void set_uniform(GLint location, const std::vector<float> &value);
@@ -24,8 +25,14 @@ static void set_uniform(GLint location, int value);
 static void set_uniform(GLint location, unsigned int value);
 static void set_uniform(GLint location, float value);
 static void set_uniform(GLint location, const glm::mat4 &value);
+static void set_uniform(GLint location, bool value);
 
 Shader::Shader() : program_id(0), varyingType{GL_NONE} {}
+
+Shader::~Shader()
+{
+    delete_program();
+}
 
 bool Shader::generate_program(const std::vector<std::string> &vert_src, const std::vector<std::string> &frag_src, const std::vector<std::string> &geometry_src)
 {
@@ -284,6 +291,11 @@ void set_uniform(GLint location, unsigned int value)
 void set_uniform(GLint location, float value)
 {
     glUniform1f(location, value);
+}
+
+void set_uniform(GLint location, bool value)
+{
+    set_uniform(location, static_cast<int>(value));
 }
 
 void Shader::setTransformFeedBackVaryings(std::vector<const char *> varyings, GLenum type)

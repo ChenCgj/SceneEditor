@@ -25,7 +25,7 @@ static aiTextureType types[] = {
     aiTextureType_DISPLACEMENT, aiTextureType_LIGHTMAP, aiTextureType_REFLECTION, aiTextureType_UNKNOWN
 };
 
-Mesh::Mesh() : mVb(0), mVao(0), mVeb(0), m_baseMatrix(1.0), m_transformMatrix(1.0)
+Mesh::Mesh() : mVb(0), mVao(0), mVeb(0), m_baseMatrix(1.0), m_transformMatrix(1.0), m_enableSetShader(true)
 {
     glGenBuffers(1, &mVb);
     glGenBuffers(1, &mVeb);
@@ -50,6 +50,7 @@ Mesh::Mesh() : mVb(0), mVao(0), mVeb(0), m_baseMatrix(1.0), m_transformMatrix(1.
 
 Mesh::~Mesh()
 {
+    unLoadData();
     if (mVao) {
         glDeleteVertexArrays(1, &mVao);
         mVao = 0;
@@ -89,6 +90,25 @@ void loadTexture(aiTextureType type, const aiMaterial *material, vector<GLuint> 
     }
 }
 
+void Mesh::generateNormal()
+{
+    auto nVert = mVertexData.m_pos.size();
+    mVertexData.m_hasNormal = true;
+    mVertexData.m_normal = std::vector<glm::vec3>(nVert, glm::vec3{0, 0, 0});
+    std::vector<int> faceCount(nVert, 0);
+    for (unsigned int i = 0; i + 2 < mIndices.size(); i += 3) {
+        GLuint index[] = {mIndices[i], mIndices[i + 1], mIndices[i + 2]};
+        // calcuate the normal
+        glm::vec3 fnormal = glm::cross(mVertexData.m_pos[index[1]] - mVertexData.m_pos[index[0]], mVertexData.m_pos[index[2]] - mVertexData.m_pos[index[0]]);
+        fnormal = glm::normalize(fnormal);
+        for (auto j : index) {
+            mVertexData.m_normal[j] = (mVertexData.m_normal[j] * static_cast<float>(faceCount[j]) + fnormal) / static_cast<float>(faceCount[j] + 1);
+            faceCount[j]++;
+        }
+    }
+    mVertexData.m_hasNormal = true;
+}
+
 bool Mesh::loadData(const vector<float> &verties, const vector<float> &normal, const vector<float> &color, const vector<float> &uv,
                     const vector<float> &tangent, const vector<float> &bitangent, const vector<GLuint> &indies)
 {
@@ -125,19 +145,7 @@ bool Mesh::loadData(const vector<float> &verties, const vector<float> &normal, c
         mIndices = indies;
     }
     if (!mVertexData.m_hasNormal) {
-        mVertexData.m_hasNormal = true;
-        mVertexData.m_normal = std::vector<glm::vec3>(nVert, glm::vec3{0, 0, 0});
-        std::vector<int> faceCount(nVert, 0);
-        for (unsigned int i = 0; i + 2 < mIndices.size(); i += 3) {
-            GLuint index[] = {mIndices[i], mIndices[i + 1], mIndices[i + 2]};
-            // calcuate the normal
-            glm::vec3 fnormal = glm::cross(mVertexData.m_pos[index[1]] - mVertexData.m_pos[index[0]], mVertexData.m_pos[index[2]] - mVertexData.m_pos[index[0]]);
-            fnormal = glm::normalize(fnormal);
-            for (auto j : index) {
-                mVertexData.m_normal[j] = (mVertexData.m_normal[j] * static_cast<float>(faceCount[j]) + fnormal) / static_cast<float>(faceCount[j] + 1);
-                faceCount[j]++;
-            }
-        }
+        generateNormal();
     }
     return bindData();
 }
@@ -178,6 +186,9 @@ bool Mesh::loadData(const aiMesh *mesh, const aiScene *scene, unordered_map<std:
         for (unsigned j = 0; j < f.mNumIndices; ++j) {
             mIndices.push_back(f.mIndices[j]);
         }
+    }
+    if (!mVertexData.m_hasNormal) {
+        generateNormal();
     }
     return bindData();
 }
@@ -264,8 +275,31 @@ void Mesh::unLoadData()
     mVertexData.m_hasBitangent = false;
     mIndices.clear();
     for (int i = 0; i < k_texTypeCount; ++i) {
+        for (auto id : mTex[i]) {
+            Texture_manager::instance()->destroy_texture(id);
+        }
         mTex[i].clear();
     }
+}
+
+void Mesh::enableSetShader(bool flag)
+{
+    m_enableSetShader = flag;
+}
+
+bool Mesh::setShaderParam(Shader &shader) const
+{
+    if (!m_enableSetShader) {
+        return true;
+    }
+    bool ret = shader.set_uniform("mmodel", m_transformMatrix * m_baseMatrix) &&
+               shader.set_uniform("colorValid", mVertexData.m_color.size() != 0) &&
+               shader.set_uniform("diffValid", mTex[k_texDiffuse].size() != 0) &&
+               shader.set_uniform("specValid", mTex[k_texSpecular].size() != 0) &&
+               shader.set_uniform("normValid", mTex[k_texNormals].size() != 0) &&
+            //    shader.set_uniform("heigValid", mTex[k_texHeight].size() != 0) &&
+               true;
+    return ret;
 }
 
 void Mesh::draw(Shader &program) const
@@ -276,7 +310,11 @@ void Mesh::draw(Shader &program) const
             TEX_MGR->bind_texture(program, GL_TEXTURE_2D, m_texName[i] + to_string(j + 1), mTex[i][j]);
         }
     }
-    program.set_uniform("mmodel", m_transformMatrix * m_baseMatrix);
+    if (!setShaderParam(program)) {
+        glActiveTexture(0);
+        ERRINFO("Set shader parameters fail.");
+        return;
+    }
     glBindVertexArray(mVao);
     glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
@@ -291,7 +329,11 @@ void Mesh::instanceDraw(Shader &program, int ninstance) const
             TEX_MGR->bind_texture(program, GL_TEXTURE_2D, m_texName[i] + to_string(j + 1), mTex[i][j]);
         }
     }
-    program.set_uniform("mmodel", m_transformMatrix * m_baseMatrix);
+    if (!setShaderParam(program)) {
+        glActiveTexture(0);
+        ERRINFO("Set shader prarameters fail.");
+        return;
+    }
     glBindVertexArray(mVao);
     glDrawElementsInstanced(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, nullptr, ninstance);
     glBindVertexArray(0);

@@ -61,6 +61,7 @@ SkyBox::SkyBox() : m_texID(0)
         m_shader.delete_program();
         return;
     }
+    m_mesh.enableSetShader(false);
 }
 
 bool SkyBox::loadTexture(const std::vector<std::string> &imgs)

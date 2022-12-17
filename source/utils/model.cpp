@@ -96,6 +96,11 @@ static Node *getNode(const aiNode *node, const aiScene *scene, std::unordered_ma
 
 Model::Model() : m_transformMatrix(1.0f), m_baseMatrix(1.0f), mNode(nullptr) {}
 
+Model::~Model()
+{
+    unload();
+}
+
 bool Model::loadModel()
 {
     mNode = new Node;
