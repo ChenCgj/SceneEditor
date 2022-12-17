@@ -19,7 +19,7 @@ using glm::normalize;
 
 static void initOpengl();
 
-SceneEditorApp::SceneEditorApp(int width, int height) : Application{"Scene Editor", width, height}, m_skybox{}
+SceneEditorApp::SceneEditorApp(int width, int height) : Application{"Scene Editor", width, height}, m_skybox{}, m_pointLight(vec3{0, 0, 5}, 1, 0.1, 0.1)
 {
     initOpengl();
     glViewport(0, 0, width, height);
@@ -73,6 +73,17 @@ bool SceneEditorApp::render()
     }
     if (!m_shader.set_uniform("mproj", m_camera.get_project_matrix())) {
         ERRINFO("Set uniform variable %s fail.", "mproj");
+        return false;
+    }
+    if (!m_shader.set_uniform("pointLightCount", 1u)) {
+        ERRINFO("Set uniform variable %s fail.", "pointLightCount");
+        return false;
+    }
+    if (!m_shader.set_uniform("viewPos", m_camera.get_pos())) {
+        ERRINFO("Set uniform variable %s fail.", "viewPos");
+        return false;
+    }
+    if (!m_pointLight.applyToShader(m_shader, 0)) {
         return false;
     }
     m_mesh->draw(m_shader);
@@ -156,6 +167,7 @@ void SceneEditorApp::dealKeyDown(SDL_Keycode key)
         move[1] += 0.2;
     }
     m_camera.move(move);
+    m_pointLight.setPos(m_camera.get_pos());
 }
 
 // void SceneEditorApp::dealKeyUp(SDL_Keycode key)

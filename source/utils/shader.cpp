@@ -9,13 +9,19 @@
 
 template bool Shader::set_uniform<std::vector<int>>(const std::string &name, const std::vector<int> &value);
 template bool Shader::set_uniform<std::vector<float>>(const std::string &name, const std::vector<float> &value);
+template bool Shader::set_uniform<glm::vec3>(const std::string &name, const glm::vec3 &value);
+template bool Shader::set_uniform<glm::vec4>(const std::string &name, const glm::vec4 &value);
 template bool Shader::set_uniform<int>(const std::string &name, const int &value);
+template bool Shader::set_uniform<unsigned int>(const std::string &name, const unsigned int &value);
 template bool Shader::set_uniform<float>(const std::string &name, const float &value);
 template bool Shader::set_uniform<glm::mat4>(const std::string &name, const glm::mat4 &value);
 
 static void set_uniform(GLint location, const std::vector<int> &value);
 static void set_uniform(GLint location, const std::vector<float> &value);
+static void set_uniform(GLint location, const glm::vec3 &value);
+static void set_uniform(GLint location, const glm::vec4 &value);
 static void set_uniform(GLint location, int value);
+static void set_uniform(GLint location, unsigned int value);
 static void set_uniform(GLint location, float value);
 static void set_uniform(GLint location, const glm::mat4 &value);
 
@@ -253,9 +259,26 @@ void set_uniform(GLint location, const std::vector<int> &value)
     }
 }
 
+void set_uniform(GLint location, const glm::vec3 &value)
+{
+    std::vector<float> v{value[0], value[1], value[2]};
+    set_uniform(location, v);
+}
+
+void set_uniform(GLint location, const glm::vec4 &value)
+{
+    std::vector<float> v{value[0], value[1], value[2], value[3]};
+    set_uniform(location, v);
+}
+
 void set_uniform(GLint location, int value)
 {
     glUniform1i(location, value);
+}
+
+void set_uniform(GLint location, unsigned int value)
+{
+    glUniform1ui(location, value);
 }
 
 void set_uniform(GLint location, float value)

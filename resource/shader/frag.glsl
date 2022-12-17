@@ -43,7 +43,10 @@ vec4 calcSpotLight(SpotLight light, MaterialColor color, vec3 norm, vec3 view_di
 
 // ---------------------------------------------------------------------------------------------------
 
-#define POINT_LIGHT_COUNT 1
+#define MAX_POINT_LIGHT_COUNT 10
+#define MAX_DIR_LIGHT_COUNT   10
+#define MAX_SPOT_LIGHT_COUNT  10
+
 in vec3 fragPos;
 in vec3 normal;
 in vec2 cood;
@@ -55,9 +58,12 @@ uniform sampler2D texNorm1;
 uniform sampler2D texHeg1;
 
 uniform vec3 viewPos;
-uniform DirLight dirLight;
-uniform PointLight pointLight[POINT_LIGHT_COUNT];
-uniform SpotLight spotLight;
+uniform DirLight dirLight[MAX_DIR_LIGHT_COUNT];
+uniform uint dirLightCount;
+uniform PointLight pointLight[MAX_POINT_LIGHT_COUNT];
+uniform uint pointLightCount;
+uniform SpotLight spotLight[MAX_SPOT_LIGHT_COUNT];
+uniform uint spotLightCount;
 
 struct Material {
     vec4 ambient;
@@ -80,13 +86,13 @@ void main()
 
     color.shininess = material.shininess;
     // outColorTemp += calcDirLight(dirLight, color, norm, viewPos - fragPos);
-    for (int i = 0; i < POINT_LIGHT_COUNT; ++i) {
+    for (int i = 0; i < pointLightCount; ++i) {
         outColorTemp += calcPointLight(pointLight[i], color, normal, viewPos - fragPos, fragPos);
     }
     // outColorTemp += calcSpotLight(spotLight, color, norm, viewPos - fragPos, fragPos);
-    // outColor = vec4(outColorTemp.rgb, 1.0f);
+    outColor = vec4(outColorTemp.rgb, 1.0f);
     // outColor = texture(texDiff1, cood);
-    outColor = vec4(basecolor, 1.0);
+    // outColor = vec4(basecolor, 1.0);
 }
 
 vec4 calcDirLight(DirLight light, MaterialColor color, vec3 norm, vec3 view_dir)

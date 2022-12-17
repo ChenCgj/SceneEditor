@@ -7,6 +7,7 @@
 #include "model.h"
 #include "shader.h"
 #include "skyBox.h"
+#include "light.h"
 
 class Mesh;
 
@@ -31,6 +32,7 @@ private:
     // Shader m_testShader;
     std::shared_ptr<Mesh> m_mesh;
     SkyBox m_skybox;
+    PointLight m_pointLight;
 };
 
 #endif
