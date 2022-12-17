@@ -21,9 +21,10 @@ void Light::setColor(const glm::vec4 &a, const glm::vec4 &d, const glm::vec4 &s)
     m_lc.specular = s;
 }
 
-Dirlight::Dirlight(const glm::vec3 &dir) : Light(), m_dir{glm::vec3(1.0)}
+Dirlight::Dirlight(const glm::vec3 &dir) : Light(), m_dir{dir}
 {
     m_name = "dirLight";
+    m_type = k_dirLight;
 }
 
 void Dirlight::setDir(const glm::vec3 &dir)
@@ -90,16 +91,17 @@ bool PointLight::applyToShader(Shader &shader, int index) const
     return true;
 }
 
-SpotLight::SpotLight(const glm::vec3 &lightPos, const glm::vec3 &lightDir, float angleCos1, float angleCos2, float constant, float linear, float quadratic) :
-                     PointLight(lightPos, constant, linear, quadratic), m_angleCos1(angleCos1), m_angleCos2(angleCos2), m_dir(lightDir)
+SpotLight::SpotLight(const glm::vec3 &lightPos, const glm::vec3 &lightDir, float innerAngle, float outerAngle, float constant, float linear, float quadratic) :
+                     PointLight(lightPos, constant, linear, quadratic), m_angleCos1(glm::cos(glm::radians(innerAngle))), m_angleCos2(glm::cos(glm::radians(outerAngle))), m_dir(lightDir)
 {
     m_name = "spotLight";
+    m_type = k_spotLight;
 }
 
-void SpotLight::setParamer(float angleCos1, float angleCos2, float constant, float linear, float quadratic)
+void SpotLight::setParamer(float innerAngle, float outerAngle, float constant, float linear, float quadratic)
 {
-    m_angleCos1 = angleCos1;
-    m_angleCos2 = angleCos2;
+    m_angleCos1 = glm::cos(glm::radians(innerAngle));
+    m_angleCos2 = glm::cos(glm::radians(outerAngle));
     PointLight::setParamer(constant, linear, quadratic);
 }
 

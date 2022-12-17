@@ -50,9 +50,9 @@ protected:
 class SpotLight : public PointLight {
 public:
     SpotLight(const glm::vec3 &lightPos, const glm::vec3 &lightDir,
-             float angleCos1, float angleCos2,
+             float innerAngle, float outerAngle,
              float constant, float linear, float quadratic);
-    void setParamer(float angleCos1, float angleCos2, float constant, float linear, float quadratic);
+    void setParamer(float innerAngle, float outerAngle, float constant, float linear, float quadratic);
     void setDir(const glm::vec3 &dir);
     bool applyToShader(Shader &shader, int index) const override; 
 protected:

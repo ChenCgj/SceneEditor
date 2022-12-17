@@ -92,18 +92,20 @@ void main()
     }
     color.shininess = material.shininess;
 
+    // vec3 c = vec3(0);
     for (int i = 0; i < dirLightCount; ++i) {
         outColorTemp += calcDirLight(dirLight[i], color, normal, viewPos - fragPos);
+        // c += vec3(0.5);
     }
     for (int i = 0; i < pointLightCount; ++i) {
         outColorTemp += calcPointLight(pointLight[i], color, normal, viewPos - fragPos, fragPos);
-        // outColorTemp += vec4(color.diffuse.rgb, 0.0);
     }
     for (int i = 0; i < spotLightCount; ++i) {
         outColorTemp += calcSpotLight(spotLight[i], color, normal, viewPos - fragPos, fragPos);
     }
     outColor = vec4(outColorTemp.rgb, 1.0);
     // outColor -= outColor;
+    // outColor += vec4(c, 1);
     // outColor += texture(texDiff1, vec2(cood));
 }
 

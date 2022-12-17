@@ -70,11 +70,20 @@ SceneEditorApp::SceneEditorApp(int width, int height) : Application{"Scene Edito
     int id = Texture_manager::instance()->load_texture(GL_TEXTURE_2D, "..\\resource\\models\\face\\face.png");
     m_mesh->addTexture(Mesh::k_texDiffuse, id);
 
-    m_light = std::make_shared<PointLight>(vec3(0, 0, 5), 1, 0.01, 0.0001);
+    m_light = std::make_shared<PointLight>(vec3(0, 0, 10), 1, 0.001, 0.01);
+    m_light->setColor(glm::vec4(0), glm::vec4(1.0f, 0.6f, 0.0f, 1.0f), glm::vec4(1.0f, 0.6f, 0.0f, 1.0f));
+
+    m_spotLight = std::make_shared<SpotLight>(glm::vec3(0, 0, 5), glm::vec3(0, 0, -5), 12.5, 17.5, 1, 0.01, 0.001);
+    m_spotLight->setColor(glm::vec4(0), glm::vec4(0.8f, 0.8f, 0.0f, 1.0f), glm::vec4(0.8f, 0.8f, 0.0f, 1.0f));
+
+    m_dirLight = std::make_shared<Dirlight>(glm::vec3(0, 0, -1));
+    m_dirLight->setColor(glm::vec4(0.3f, 0.24f, 0.14f, 1.0f), glm::vec4(0.7f, 0.42f, 0.26f, 1.0f), glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 
     m_renderer.addMesh(m_mesh);
     m_renderer.addModel(m_model);
     m_renderer.addLight(m_light);
+    m_renderer.addLight(m_spotLight);
+    m_renderer.addLight(m_dirLight);
     m_renderer.setSkyBox(m_skyBox);
 }
 
@@ -123,6 +132,7 @@ void SceneEditorApp::dealMouseMove(const std::pair<int, int> &pos, const std::pa
     }
     m_camera.rotate(radians(rpos.first * 0.1), vec3{0, 1, 0});
     m_camera.rotate(radians(rpos.second * 0.1), vec3{1, 0, 0});
+    m_spotLight->setDir(-m_camera.get_front());
 }
 
 void SceneEditorApp::dealWheel(const std::pair<int, int> &pos, const std::pair<int, int> &scroll)
@@ -159,7 +169,8 @@ void SceneEditorApp::dealKeyDown(SDL_Keycode key)
         move[1] += 0.2;
     }
     m_camera.move(move);
-    m_light->setPos(m_camera.get_pos());
+    m_spotLight->setPos(m_camera.get_pos());
+    m_spotLight->setDir(-m_camera.get_front());
 }
 
 // void SceneEditorApp::dealKeyUp(SDL_Keycode key)
