@@ -27,6 +27,9 @@ static std::pair<double, double> mergeRange(const std::pair<double, double> &r1,
 
 static void cleanNode(Node *node)
 {
+    if (!node) {
+        return;
+    }
     for (auto m : node->meshes) {
         m->unLoadData();
         delete m;
