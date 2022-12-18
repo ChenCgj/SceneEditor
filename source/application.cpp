@@ -1,3 +1,4 @@
+/*
 #include "SDL_events.h"
 #include "application.h"
 #include "debug.h"
@@ -186,3 +187,4 @@ Application::~Application()
     m_context = nullptr;
     m_pWnd = nullptr;
 }
+*/

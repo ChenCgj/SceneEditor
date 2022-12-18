@@ -1,25 +1,28 @@
+#include <memory>
 #include "debug.h"
 #include "glm.hpp"
 #include "glad/glad.h"
-#include "sceneEditorApp.h"
 #include "mesh.h"
 #include "gtc/matrix_transform.hpp"
-#include "SDL.h"
 #include "texture_manager.h"
+#include "sceneEditorApp.h"
+#include "SUI_utils.h"
 
 using glm::vec3;
 using glm::vec4;
 using glm::mat4;
 using std::vector;
 using std::make_shared;
+using std::make_pair;
 using glm::radians;
 using glm::scale;
 using glm::inverse;
 using glm::normalize;
 
+using namespace sui;
 static void initOpengl();
 
-SceneEditorApp::SceneEditorApp(int width, int height) : Application{"Scene Editor", width, height}
+SceneEditorApp::SceneEditorApp(int width, int height) : m_width(width), m_height(height)
 {
     initOpengl();
     glViewport(0, 0, width, height);
@@ -34,7 +37,7 @@ SceneEditorApp::SceneEditorApp(int width, int height) : Application{"Scene Edito
     // if (!m_model->loadModel("..\\resource\\models\\face\\face.obj")) {
     // if (!m_model.loadModel("..\\resource\\models\\cornell_box.obj")) {
     if (!m_model->loadModel("..\\resource\\models\\low_poly_tree\\Lowpoly_tree_sample.obj")) {
-        ERRINFO("Load model %s%s fail.", SDL_GetBasePath(), "..\\resource\\model\\mark\\mark.obj");
+        ERRINFO("Load model %s fail.", "..\\resource\\model\\mark\\mark.obj");
     }
 
     m_skyBox = make_shared<SkyBox>();
@@ -95,10 +98,10 @@ bool SceneEditorApp::render()
 
 void SceneEditorApp::dealButtonDown(const std::pair<int, int> &pos, MouseBtn button)
 {
-    if (button != MouseBtn::k_btnLeft || altKeyPressed()) {
+    if (button != MouseBtn::k_btnLeft || is_alt_down()) {
         return;
     }
-    auto size = getWindowSize();
+    auto size = make_pair(m_width, m_height);
 
     mat4 reset1{1.0};   // screen to ndc
     reset1[0][0] = 2.0 / size.first;
@@ -127,7 +130,7 @@ void SceneEditorApp::dealButtonDown(const std::pair<int, int> &pos, MouseBtn but
 
 void SceneEditorApp::dealMouseMove(const std::pair<int, int> &pos, const std::pair<int, int> &rpos)
 {
-    if (!leftButtonPressed() || !altKeyPressed()) {
+    if (!is_mouse_left_button_down() || !is_alt_down()) {
         return;
     }
     m_camera.rotate(radians(rpos.first * 0.1), vec3{0, 1, 0});
@@ -135,10 +138,10 @@ void SceneEditorApp::dealMouseMove(const std::pair<int, int> &pos, const std::pa
     m_spotLight->setDir(-m_camera.get_front());
 }
 
-void SceneEditorApp::dealWheel(const std::pair<int, int> &pos, const std::pair<int, int> &scroll)
+void SceneEditorApp::dealWheel(const std::pair<int, int> &pos, float scroll)
 {
     float scale = 1.0;
-    if (scroll.second > 0) {
+    if (scroll > 0) {
         scale *= 1.1;
     } else {
         scale /= 1.1;
@@ -146,28 +149,29 @@ void SceneEditorApp::dealWheel(const std::pair<int, int> &pos, const std::pair<i
     m_camera.zoom(scale);
 }
 
-void SceneEditorApp::dealKeyDown(SDL_Keycode key)
+void SceneEditorApp::dealKeyDown(Key_code key)
 {
-    const auto st = keyBoardStatu();
+    int num_key;
+    const auto st = get_key_state(num_key);
     vec3 move(0);
-    if (st.count(SDLK_w)) {
+    if (st[key_w]) {
         move[2] -= 0.2;
     }
-    if (st.count(SDLK_s)) {
+    if (st[key_s]) {
         move[2] += 0.2;
     }
-    if (st.count(SDLK_a)) {
+    if (st[key_a]) {
         move[0] -= 0.2;
     }
-    if (st.count(SDLK_d)) {
+    if (st[key_d]) {
         move[0] += 0.2;
     }
-    if (st.count(SDLK_DOWN)) {
-        move[1] -= 0.2;
-    }
-    if (st.count(SDLK_UP)) {
-        move[1] += 0.2;
-    }
+    // if (st[key_]) {
+    //     move[1] -= 0.2;
+    // }
+    // if (st.count(SDLK_UP)) {
+    //     move[1] += 0.2;
+    // }
     m_camera.move(move);
     m_spotLight->setPos(m_camera.get_pos());
     m_spotLight->setDir(-m_camera.get_front());

@@ -11,16 +11,16 @@ SUFFIX = .exe
 TARGET = $(PROG_NAME)$(SUFFIX)
 
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall -c -g -DDEBUG
+CXXFLAGS = -std=c++17 -Wall -c -g -DDEBUG
 LDFLAGS =#-mwindows
 # -Wl,--dynamicbase -Wl,--nxcompat -Wl,--high-entropy-va
 
-SRC_DIR = source source/glad source/utils
+SRC_DIR = source source/glad source/utils sui/base sui/layout sui/main sui/ui sui/utils sui/window
 LIB_DIR = lib
-INC_DIR = include include/SDL2 include/glm include/utils
+INC_DIR = include include/SDL2 include/glm include/utils sui/include include/sui
 BIN_DIR = bin
 TMP_DIR = tmp
-LIB = winmm setupapi dxerr8 ole32 imm32 oleaut32 version gdi32 mingw32 SDL2main SDL2 SDL2_image assimp
+LIB = winmm setupapi dxerr8 ole32 imm32 oleaut32 version gdi32 mingw32 SDL2main SDL2 SDL2_image SDL2_ttf assimp
 
 CPPSOURCE = $(wildcard $(addsuffix /*.cpp, $(SRC_DIR)))
 CSOURCE = $(wildcard $(addsuffix /*.c, $(SRC_DIR)))

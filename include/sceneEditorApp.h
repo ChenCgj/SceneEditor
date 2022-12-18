@@ -9,24 +9,28 @@
 #include "skyBox.h"
 #include "light.h"
 #include "renderer.h"
+#include "SUI.h"
 
 class Mesh;
 
-class SceneEditorApp : public Application {
+class SceneEditorApp {
+    friend class sui::Opengl_graphic;
 public:
     SceneEditorApp(int width, int height);
     ~SceneEditorApp();
+    enum MouseBtn {k_btnLeft, k_btnMiddle, k_btnRight};
+    bool render();
+    void dealButtonDown(const std::pair<int, int> &pos, MouseBtn button);
+    // void dealButtonUp(const std::pair<int, int> &pos, MouseBtn button);
+    void dealMouseMove(const std::pair<int, int> &pos, const std::pair<int, int> &rpos);
+    void dealWheel(const std::pair<int, int> &pos, float scroll);
+    void dealKeyDown(sui::Key_code key);
+    // void dealKeyUp(SDL_Keycode key);
+    void dealWinSizeChange(const std::pair<int, int> &size);
+    // void dealOther(const SDL_Event *pe);
 protected:
-    bool render() override;
-    void dealButtonDown(const std::pair<int, int> &pos, MouseBtn button) override;
-    // void dealButtonUp(const std::pair<int, int> &pos, MouseBtn button) override;
-    void dealMouseMove(const std::pair<int, int> &pos, const std::pair<int, int> &rpos) override;
-    void dealWheel(const std::pair<int, int> &pos, const std::pair<int, int> &scroll) override;
-    void dealKeyDown(SDL_Keycode key) override;
-    // void dealKeyUp(SDL_Keycode key) override;
-    void dealWinSizeChange(const std::pair<int, int> &size) override;
-    // void dealOther(const SDL_Event *pe) override;
 private:
+    int m_width, m_height;
     Camera m_camera;
     Renderer m_renderer;
     std::shared_ptr<Mesh> m_mesh;
