@@ -35,6 +35,7 @@ private:
     Renderer m_renderer;
     std::shared_ptr<Mesh> m_mesh;
     std::shared_ptr<Model> m_model;
+    std::shared_ptr<ModelBuffer> m_modelbuffer;
     std::shared_ptr<PointLight> m_light;
     std::shared_ptr<SpotLight> m_spotLight;
     std::shared_ptr<Dirlight> m_dirLight;

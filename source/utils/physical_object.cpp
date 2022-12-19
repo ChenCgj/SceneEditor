@@ -66,15 +66,15 @@ double Physical_object_base::get_mass() const
 
 void Physical_object::load_model(const std::string &filename, const glm::mat4 &matrix)
 {
-    model.loadModel(filename);
+    modelbuffer.loadModel(filename);
     model.setBaseMatrix(matrix);
 }
 
 Physical_object::Physical_object(double posX, double posY, double posZ, double vx, double vy, double vz, double ax, double ay, double az, double mass) :
     Physical_object_base(posX, posY, posZ, vx, vy, vz, ax, ay, az, mass)
 {
-    model.loadModel();
-    model.getModelSize(sizeX, sizeY, sizeZ);
+    modelbuffer.loadModel();
+    modelbuffer.getModelSize(sizeX, sizeY, sizeZ);
 }
 
 void Physical_object::draw(Shader &program)
@@ -124,7 +124,7 @@ bool Physical_object_base::getIgnoreForce() const
 
 Physical_object::~Physical_object()
 {
-    model.unload();
+    modelbuffer.unload();
 }
 
 void Physical_object::set_baseMatrix(const glm::mat4 &matrix)
@@ -139,7 +139,7 @@ void Physical_object_base::set_destroy(bool desFlag)
 
 void Physical_object::get_size(double &w, double &h, double &d)
 {
-    model.getModelSize(w, h, d);
+    modelbuffer.getModelSize(w, h, d);
 }
 
 void Physical_object::scale(double scaleX, double scaleY, double scaleZ)

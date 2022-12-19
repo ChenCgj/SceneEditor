@@ -30,15 +30,18 @@ SceneEditorApp::SceneEditorApp(int width, int height) : m_width(width), m_height
     m_camera.set_pos(vec3{0.0, 0.0, 5.0}, vec3{0, 0, 0});
     m_camera.set_distance(0.1, 1000);
 
+    m_modelbuffer = make_shared<ModelBuffer>();
     m_model = make_shared<Model>();
     // if (!m_model->loadModel("..\\resource\\models\\mark\\mark.obj")) {
     // if (!m_model->loadModel("..\\resource\\models\\Humvee_models\\Humvee.obj")) {
     // if (!m_model->loadModel("..\\resource\\models\\mustang_gt\\Textures\\mustang_GT.obj")) {
     // if (!m_model->loadModel("..\\resource\\models\\face\\face.obj")) {
     // if (!m_model.loadModel("..\\resource\\models\\cornell_box.obj")) {
-    if (!m_model->loadModel("..\\resource\\models\\low_poly_tree\\Lowpoly_tree_sample.obj")) {
+    if (!m_modelbuffer->loadModel("..\\resource\\models\\low_poly_tree\\Lowpoly_tree_sample.obj")) {
         ERRINFO("Load model %s fail.", "..\\resource\\model\\mark\\mark.obj");
     }
+
+    m_model->SetAccessor(m_modelbuffer.get());
 
     m_skyBox = make_shared<SkyBox>();
     m_skyBox->loadTexture({

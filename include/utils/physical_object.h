@@ -5,6 +5,7 @@
 #include <functional>
 
 #include "model.h"
+#include "modelbuffer.h"
 
 class Shader;
 class Physical_object_base {
@@ -57,6 +58,7 @@ public:
 protected:
     void set_baseMatrix(const glm::mat4 &matrix) override;
 private:
+    ModelBuffer modelbuffer;
     Model model;
 };
 
