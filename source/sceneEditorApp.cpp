@@ -67,9 +67,9 @@ SceneEditorApp::SceneEditorApp(int width, int height) : m_width(width), m_height
         int k = 0;
         while (k < w) {
             verties.push_back(i * 10);
-            verties.push_back((pict[i * pitch + k * 3] + pict[i * pitch + k * 3 + 1] + pict[i * pitch + k * 3 + 2]) / 10.0f);
+            verties.push_back((pict[i * pitch + k * 3] + pict[i * pitch + k * 3 + 1] + pict[i * pitch + k * 3 + 2]) / 60.0f);
             verties.push_back(k * 10);
-            geth[{i * 0.1f, k * 0.1f}] = (pict[i * pitch + k * 3] + pict[i * pitch + k * 3 + 1] + pict[i * pitch + k * 3 + 2]) / 10.0f;
+            geth[{i * 0.1f, k * 0.1f}] = (pict[i * pitch + k * 3] + pict[i * pitch + k * 3 + 1] + pict[i * pitch + k * 3 + 2]) / 60.0f;
             for (int j = 0; j < 3; j++) {
                 color.push_back(0.5f);
             }
@@ -96,7 +96,7 @@ SceneEditorApp::SceneEditorApp(int width, int height) : m_width(width), m_height
     m_mesh->loadData(verties, {}, color, uv, {}, {}, seq);
     m_mesh->setBaseMatrix(glm::scale(glm::mat4(1.0), vec3(0.1)));
     delete pict;
-    int id = Texture_manager::instance()->load_texture(GL_TEXTURE_2D, "..\\resource\\models\\face\\face.png");
+    int id = Texture_manager::instance()->load_texture(GL_TEXTURE_2D, "..\\resource\\models\\tet\\4.jpg");
     m_mesh->addTexture(Mesh::k_texDiffuse, id);
     m_renderer.addMesh(m_mesh);
 

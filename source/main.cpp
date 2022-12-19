@@ -123,7 +123,12 @@ void init(void *arg)
     if (args->m_app == nullptr) {
         args->m_app = new SceneEditorApp(args->graphic->get_width(), args->graphic->get_height());
         args->m_app->dealLoadModel("..\\resource\\models\\low_poly_tree\\Lowpoly_tree_sample.obj");
-        // args->m_app->dealLoadModel("..\\resource\\models\\mustang_gt\\Textures\\mustang_GT.obj");
+        args->m_app->dealLoadModel("..\\resource\\models\\house\\wood_flat_house.obj");
+        args->m_app->dealLoadModel("..\\resource\\models\\mushroom\\russula_low.obj");
+        args->m_app->dealLoadModel("..\\resource\\models\\stone\\R6\\Rock_6.OBJ");
+        args->m_app->dealLoadModel("..\\resource\\models\\tree\\uploads_files_3461467_tree.obj");
+        args->m_app->dealLoadModel("..\\resource\\models\\tree\\crismas-tree.obj");
+        args->m_app->dealLoadModel("..\\resource\\models\\grass\\file.obj");
     }
 }
 
@@ -309,10 +314,25 @@ static Pane *generateModelPic()
 static void generateModelImage()
 {
     Image *img = new Image(100, 100);
-    img->load_img("..\\resource\\pic\\pic1.jpg");
+    img->load_img("..\\resource\\pic\\pic1.png");
     arg->images.push_back(img);
     img = new Image(100, 100);
-    img->load_img("..\\resource\\pic\\pic2.jpg");
+    img->load_img("..\\resource\\pic\\pic2.png");
+    arg->images.push_back(img);
+    img = new Image(100, 100);
+    img->load_img("..\\resource\\pic\\pic3.png");
+    arg->images.push_back(img);
+    img = new Image(100, 100);
+    img->load_img("..\\resource\\pic\\pic4.png");
+    arg->images.push_back(img);
+    img = new Image(100, 100);
+    img->load_img("..\\resource\\pic\\pic5.png");
+    arg->images.push_back(img);
+    img = new Image(100, 100);
+    img->load_img("..\\resource\\pic\\pic6.png");
+    arg->images.push_back(img);
+    img = new Image(100, 100);
+    img->load_img("..\\resource\\pic\\pic7.png");
     arg->images.push_back(img);
 }
 
