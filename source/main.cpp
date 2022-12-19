@@ -232,10 +232,10 @@ void dealLoadModel(const Mouse_button_event &e, void *arg)
     // todo:when load,add a button under the button"load model and you can click it to change the model"
     GraphicArg *args = reinterpret_cast<GraphicArg *>(arg);
     args->graphic->add_listener(dealButtonDown, Opengl_graphic::Opengl_graphic_event::oge_button_down, arg);
-    glm::vec3 trans = glm::vec3(20.0f,0.0f,0.0f);//默认位置
     LOGINFO("Load model...");
+    args->m_app->setStatus();
     cout << get_mouse_pos().first << endl;
-    args->m_app->dealLoadModel(trans);
+    // args->m_app->dealLoadModel(trans);
 }
 
 void dealRotateModelRX(const Mouse_button_event &e, void *arg)
@@ -243,7 +243,14 @@ void dealRotateModelRX(const Mouse_button_event &e, void *arg)
     GraphicArg *args = reinterpret_cast<GraphicArg *>(arg);
     glm::vec3 axis = glm::vec3(1.0f,0.0f,0.0f);
     LOGINFO("rotate model");
-    args->m_app->dealRotateModel(axis);
+    if(args->m_app->getStatus())
+    {
+         args->m_app->dealRotateModel(axis);
+    }
+    else
+    {
+        args->m_app->dealRotateModel(axis);
+    }
 }
 
 void dealMoveModelLeft(const Mouse_button_event &e, void *arg)

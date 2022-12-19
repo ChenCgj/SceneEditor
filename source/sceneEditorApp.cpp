@@ -32,6 +32,7 @@ SceneEditorApp::SceneEditorApp(int width, int height) : m_width(width), m_height
 
     m_modelbuffer = make_shared<ModelBuffer>();
     m_model = make_shared<Model>();
+    status = false;
     // if (!m_model->loadModel("..\\resource\\models\\mark\\mark.obj")) {
     // if (!m_model->loadModel("..\\resource\\models\\Humvee_models\\Humvee.obj")) {
     // if (!m_model->loadModel("..\\resource\\models\\mustang_gt\\Textures\\mustang_GT.obj")) {
@@ -99,6 +100,16 @@ bool SceneEditorApp::render()
     return true;
 }
 
+bool SceneEditorApp::getStatus()
+{
+    return status;
+}
+
+void SceneEditorApp::setStatus()
+{
+    status = !status;
+}
+
 void SceneEditorApp::dealButtonDown(const std::pair<int, int> &pos, MouseBtn button)
 {
     if (button != MouseBtn::k_btnLeft || is_alt_down()) {
@@ -124,6 +135,10 @@ void SceneEditorApp::dealButtonDown(const std::pair<int, int> &pos, MouseBtn but
            posWorld.x, posWorld.y, posWorld.z,
            cameraPos.x, cameraPos.y, cameraPos.z,
            dir.x, dir.y, dir.z); 
+    if(status)
+    {
+        dealLoadModel(glm::vec3(posWorld.x,posWorld.y,posWorld.z));
+    }
 }
 
 // void SceneEditorApp::dealButtonUp(const std::pair<int, int> &pos, MouseBtn button)
@@ -202,18 +217,19 @@ void SceneEditorApp::dealScaleModel(glm::vec3 trans)
 
 void SceneEditorApp::dealLoadModel(glm::vec3 trans)
 {
-    std::shared_ptr<Model> m_model = make_shared<Model>();
+    std::shared_ptr<Model> mm_model = make_shared<Model>();
     // if (!m_model->loadModel("..\\resource\\models\\mark\\mark.obj")) {
     // if (!m_model->loadModel("..\\resource\\models\\Humvee_models\\Humvee.obj")) {
     // if (!m_model->loadModel("..\\resource\\models\\mustang_gt\\Textures\\mustang_GT.obj")) {
     // if (!m_model->loadModel("..\\resource\\models\\face\\face.obj")) {
     // if (!m_model.loadModel("..\\resource\\models\\cornell_box.obj")) {
 
-    m_model->SetAccessor(m_modelbuffer.get());
+    mm_model->SetAccessor(m_modelbuffer.get());
     glm::mat4 tran = glm::mat4(1.0f);
     tran = glm::translate(tran,trans);
-    m_model->setTranslateMatrix(tran);
-    m_renderer.addModel(m_model);
+    mm_model->setTranslateMatrix(tran);
+    m_renderer.addModel(mm_model);
+    m_model = mm_model;
 }
 
 void SceneEditorApp::dealWheel(const std::pair<int, int> &pos, float scroll)
