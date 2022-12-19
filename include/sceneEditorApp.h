@@ -28,6 +28,13 @@ public:
     // void dealKeyUp(SDL_Keycode key);
     void dealWinSizeChange(const std::pair<int, int> &size);
     // void dealOther(const SDL_Event *pe);
+    void dealLoadModel(glm::vec3 trans);
+    void dealRotateModel(glm::vec3 axis);
+    void dealScaleModel(glm::vec3 trans);
+    void dealMoveModel(glm::vec3 trans);
+    void dealRotateModel(glm::vec3 axis, std::shared_ptr<Model> m_model);
+    void dealScaleModel(glm::vec3 trans, std::shared_ptr<Model> m_model);
+    void dealMoveModel(glm::vec3 trans, std::shared_ptr<Model> m_model);
 protected:
 private:
     int m_width, m_height;

@@ -42,7 +42,6 @@ SceneEditorApp::SceneEditorApp(int width, int height) : m_width(width), m_height
     }
 
     m_model->SetAccessor(m_modelbuffer.get());
-
     m_skyBox = make_shared<SkyBox>();
     m_skyBox->loadTexture({
             "..\\resource\\skyBox1\\sky_right.png",
@@ -139,6 +138,81 @@ void SceneEditorApp::dealMouseMove(const std::pair<int, int> &pos, const std::pa
     m_camera.rotate(radians(rpos.first * 0.1), vec3{0, 1, 0});
     m_camera.rotate(radians(rpos.second * 0.1), vec3{1, 0, 0});
     m_spotLight->setDir(-m_camera.get_front());
+}
+void SceneEditorApp::dealRotateModel(glm::vec3 axis, std::shared_ptr<Model> m_model)
+{
+    // std::shared_ptr<Model> m_model2 = make_shared<Model>();
+    // m_model->SetAccessor(m_modelbuffer.get());
+    glm::mat4 tran = m_model->getBaseMatrix();
+    tran = glm::rotate(tran,glm::radians(5.0f),axis);
+    m_model->setBaseMatrix(tran);
+    // m_renderer.addModel(m_model);
+}
+
+void SceneEditorApp::dealMoveModel(glm::vec3 trans, std::shared_ptr<Model> m_model)
+{
+    // std::shared_ptr<Model> m_model2 = make_shared<Model>();
+    // m_model->SetAccessor(m_modelbuffer.get());
+    glm::mat4 tran = m_model->getBaseMatrix();
+    tran = glm::translate(tran,trans);
+    m_model->setBaseMatrix(tran);
+    // m_renderer.addModel(m_model2);
+}
+
+void SceneEditorApp::dealScaleModel(glm::vec3 trans, std::shared_ptr<Model> m_model)
+{
+    // std::shared_ptr<Model> m_model2 = make_shared<Model>();
+    // m_model->SetAccessor(m_modelbuffer.get());
+    glm::mat4 tran = m_model->getBaseMatrix();
+    tran = glm::scale(tran,trans);
+    m_model->setBaseMatrix(tran);
+    // m_renderer.addModel(m_model2);
+}
+
+void SceneEditorApp::dealRotateModel(glm::vec3 axis)
+{
+    // std::shared_ptr<Model> m_model2 = make_shared<Model>();
+    // m_model->SetAccessor(m_modelbuffer.get());
+    glm::mat4 tran = m_model->getBaseMatrix();
+    tran = glm::rotate(tran,glm::radians(5.0f),axis);
+    m_model->setBaseMatrix(tran);
+    // m_renderer.addModel(m_model);
+}
+
+void SceneEditorApp::dealMoveModel(glm::vec3 trans)
+{
+    // std::shared_ptr<Model> m_model2 = make_shared<Model>();
+    // m_model->SetAccessor(m_modelbuffer.get());
+    glm::mat4 tran = m_model->getBaseMatrix();
+    tran = glm::translate(tran,trans);
+    m_model->setBaseMatrix(tran);
+    // m_renderer.addModel(m_model2);
+}
+
+void SceneEditorApp::dealScaleModel(glm::vec3 trans)
+{
+    // std::shared_ptr<Model> m_model2 = make_shared<Model>();
+    // m_model->SetAccessor(m_modelbuffer.get());
+    glm::mat4 tran = m_model->getBaseMatrix();
+    tran = glm::scale(tran,trans);
+    m_model->setBaseMatrix(tran);
+    // m_renderer.addModel(m_model2);
+}
+
+void SceneEditorApp::dealLoadModel(glm::vec3 trans)
+{
+    std::shared_ptr<Model> m_model = make_shared<Model>();
+    // if (!m_model->loadModel("..\\resource\\models\\mark\\mark.obj")) {
+    // if (!m_model->loadModel("..\\resource\\models\\Humvee_models\\Humvee.obj")) {
+    // if (!m_model->loadModel("..\\resource\\models\\mustang_gt\\Textures\\mustang_GT.obj")) {
+    // if (!m_model->loadModel("..\\resource\\models\\face\\face.obj")) {
+    // if (!m_model.loadModel("..\\resource\\models\\cornell_box.obj")) {
+
+    m_model->SetAccessor(m_modelbuffer.get());
+    glm::mat4 tran = glm::mat4(1.0f);
+    tran = glm::translate(tran,trans);
+    m_model->setTranslateMatrix(tran);
+    m_renderer.addModel(m_model);
 }
 
 void SceneEditorApp::dealWheel(const std::pair<int, int> &pos, float scroll)
