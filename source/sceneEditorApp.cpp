@@ -42,6 +42,7 @@ SceneEditorApp::SceneEditorApp(int width, int height) : m_width(width), m_height
     }
 
     m_model->SetAccessor(m_modelbuffer.get());
+    m_model->setBaseMatrix(scale(mat4(1.0), vec3(0.1, 0.1, 0.1)));
     m_skyBox = make_shared<SkyBox>();
     m_skyBox->loadTexture({
             "..\\resource\\skyBox1\\sky_right.png",
