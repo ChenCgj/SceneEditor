@@ -20,7 +20,7 @@ using glm::radians;
 using glm::scale;
 using glm::inverse;
 using glm::normalize;
-std::map<std::pair<int, int>, float> geth;
+std::map<std::pair<float, float>, float> geth;
 using namespace sui;
 static void initOpengl();
 int h, w, pitch;
@@ -63,13 +63,13 @@ SceneEditorApp::SceneEditorApp(int width, int height) : m_width(width), m_height
 
     extern char *load_image_data(const std::string &image, int &width, int &height, int &pitch);
     char *pict = load_image_data("..\\resource\\place\\place1.jpg", h, w, pitch);
-        for (int i = 0; i < h; i += 1) {
+    for (int i = 0; i < h; i += 1) {
         int k = 0;
         while (k < w) {
             verties.push_back(i * 10);
             verties.push_back((pict[i * pitch + k * 3] + pict[i * pitch + k * 3 + 1] + pict[i * pitch + k * 3 + 2]) / 10.0f);
             verties.push_back(k * 10);
-            geth[{i * 10, k * 10}] = (pict[i * pitch + k * 3] + pict[i * pitch + k * 3 + 1] + pict[i * pitch + k * 3 + 2]) / 10.0f;
+            geth[{i * 0.1f, k * 0.1f}] = (pict[i * pitch + k * 3] + pict[i * pitch + k * 3 + 1] + pict[i * pitch + k * 3 + 2]) / 10.0f;
             for (int j = 0; j < 3; j++) {
                 color.push_back(0.5f);
             }
@@ -94,7 +94,7 @@ SceneEditorApp::SceneEditorApp(int width, int height) : m_width(width), m_height
         }
     }
     m_mesh->loadData(verties, {}, color, uv, {}, {}, seq);
-    m_mesh->setBaseMatrix(glm::scale(glm::mat4(1.0), vec3(0.01)));
+    m_mesh->setBaseMatrix(glm::scale(glm::mat4(1.0), vec3(0.1)));
     delete pict;
     int id = Texture_manager::instance()->load_texture(GL_TEXTURE_2D, "..\\resource\\models\\face\\face.png");
     m_mesh->addTexture(Mesh::k_texDiffuse, id);
@@ -198,13 +198,13 @@ void SceneEditorApp::dealButtonDown(const std::pair<int, int> &pos, MouseBtn but
     };
 
     auto getheight = [&](glm::vec3 &pd) {
-        int x1 = (int)pd.x / 10 * 10, z1 = (int)pd.z / 10 * 10;
+        float x1 = floor(pd.x * 10) / 10.0f, z1 = floor(pd.z * 10) / 10.0f;
         float d1 = 1.0f / getdist((float)pd.x, (float)pd.z, x1, z1);
-        float d2 = 1.0f / getdist((float)pd.x, (float)pd.z, x1, z1 + 10);
-        float d3 = 1.0f / getdist((float)pd.x, (float)pd.z, x1 + 10, z1);
-        float d4 = 1.0f / getdist((float)pd.x, (float)pd.z, x1 + 10, z1 + 10);
+        float d2 = 1.0f / getdist((float)pd.x, (float)pd.z, x1, z1 + 0.1f);
+        float d3 = 1.0f / getdist((float)pd.x, (float)pd.z, x1 + 0.1f, z1);
+        float d4 = 1.0f / getdist((float)pd.x, (float)pd.z, x1 + 0.1f, z1 + 0.1f);
         float sum = d1 + d2 + d3 + d4;
-        return d1 / sum * geth[{x1, z1}] + d2 / sum * geth[{x1, z1 + 10}] + d3 / sum * geth[{x1 + 10, z1}] + d4 / sum * geth[{x1 + 10, z1 + 10}];
+        return d1 / sum * geth[{x1, z1}] + d2 / sum * geth[{x1, z1 + 0.1f}] + d3 / sum * geth[{x1 + 0.1f, z1}] + d4 / sum * geth[{x1 + 0.1f, z1 + 0.1f}];
     };
     
     float h1 = getheight(cameraPos);
