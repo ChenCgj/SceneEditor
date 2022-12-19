@@ -20,6 +20,8 @@ public:
     ~SceneEditorApp();
     enum MouseBtn {k_btnLeft, k_btnMiddle, k_btnRight};
     bool render();
+    bool getStatus();
+    void setStatus();
     void dealButtonDown(const std::pair<int, int> &pos, MouseBtn button);
     // void dealButtonUp(const std::pair<int, int> &pos, MouseBtn button);
     void dealMouseMove(const std::pair<int, int> &pos, const std::pair<int, int> &rpos);
@@ -47,6 +49,7 @@ private:
     std::shared_ptr<SpotLight> m_spotLight;
     std::shared_ptr<Dirlight> m_dirLight;
     std::shared_ptr<SkyBox> m_skyBox;
+    bool status;
 };
 
 #endif
