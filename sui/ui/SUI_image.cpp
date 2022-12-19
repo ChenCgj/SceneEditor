@@ -59,9 +59,9 @@ void Image::unload_mask() {
 void Image::update_image(Canvas &target_canvas) {
     pcanvas->load_renderer(target_canvas);
     sketch->draw_sketch(*pcanvas, 0, 0);
-    pcanvas->set_mask_mode(Mask_mode::be_masked);
-    mask.draw_board(*pcanvas, 0, 0);
-    pcanvas->set_mask_mode(Mask_mode::none_mask);
+    // pcanvas->set_mask_mode(Mask_mode::be_masked);
+    // mask.draw_board(*pcanvas, 0, 0);
+    // pcanvas->set_mask_mode(Mask_mode::none_mask);
 }
 
 void Image::draw_image(Canvas &canvas, int posX, int posY) {

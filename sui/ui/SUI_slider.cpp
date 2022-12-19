@@ -102,8 +102,37 @@ void Slider::deal_mouse_move_event(Mouse_motion_event &move_event) {
         if (cb_slide) {
             cb_slide(move_event, a_slide);
         }
+        move_event.set_handle(true);
         set_redraw_flag(true);
         present_all();
     }
 }
+
+void Slider::deal_mouse_button_up_event(Mouse_button_event &button_event) {
+    Element::deal_mouse_button_up_event(button_event);
+    if (button_event.handle()) {
+        return;
+    }
+    double mouse_x = button_event.event.button.x;
+    double mouse_y = button_event.event.button.y;
+    auto r = get_rect();
+    if (r.is_point_in(Point{mouse_x, mouse_y})) {
+        button_event.set_handle(true);
+    }
+}
+
+void Slider::deal_mouse_button_down_event(Mouse_button_event &button_event) {
+    Element::deal_mouse_button_down_event(button_event);
+    if (button_event.handle()) {
+        return;
+    }
+    double mouse_x = button_event.event.button.x;
+    double mouse_y = button_event.event.button.y;
+    auto r = get_rect();
+    if (r.is_point_in(Point{mouse_x, mouse_y})) {
+        button_event.set_handle(true);
+    }
+}
+
+
 }

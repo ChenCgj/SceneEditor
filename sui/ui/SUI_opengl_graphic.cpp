@@ -189,6 +189,9 @@ bool Opengl_graphic::add_opengl_funcs(const std::vector<std::function<void (void
 
 Opengl_graphic::~Opengl_graphic() {
     DBG(<< get_name() << "was destroy.");
+    if (funcs[2]) {
+        funcs[2](this->args[2]);
+    }
     destroy_frame_buffer();
     delete buffer;
     prepare_destroy();

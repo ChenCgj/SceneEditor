@@ -6,7 +6,7 @@
 using std::string;
 using std::vector;
 
-static char *load_image_data(const string &image, int &width, int &height, int &pitch)
+char *load_image_data(const string &image, int &width, int &height, int &pitch)
 {
     SDL_Surface *img_surface = IMG_Load(image.c_str());
     if (img_surface == nullptr) {

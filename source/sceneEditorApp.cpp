@@ -7,6 +7,8 @@
 #include "texture_manager.h"
 #include "sceneEditorApp.h"
 #include "SUI_utils.h"
+#include <map>
+#include <cmath>
 
 using glm::vec3;
 using glm::vec4;
@@ -18,11 +20,13 @@ using glm::radians;
 using glm::scale;
 using glm::inverse;
 using glm::normalize;
-
+std::map<std::pair<int, int>, float> geth;
 using namespace sui;
 static void initOpengl();
+int h, w, pitch;
 
-SceneEditorApp::SceneEditorApp(int width, int height) : m_width(width), m_height(height)
+
+SceneEditorApp::SceneEditorApp(int width, int height) : m_width(width), m_height(height), status(false), m_modelBufferIndex(0)
 {
     initOpengl();
     glViewport(0, 0, width, height);
@@ -30,20 +34,6 @@ SceneEditorApp::SceneEditorApp(int width, int height) : m_width(width), m_height
     m_camera.set_pos(vec3{0.0, 0.0, 5.0}, vec3{0, 0, 0});
     m_camera.set_distance(0.1, 1000);
 
-    m_modelbuffer = make_shared<ModelBuffer>();
-    m_model = make_shared<Model>();
-    status = false;
-    // if (!m_model->loadModel("..\\resource\\models\\mark\\mark.obj")) {
-    // if (!m_model->loadModel("..\\resource\\models\\Humvee_models\\Humvee.obj")) {
-    // if (!m_model->loadModel("..\\resource\\models\\mustang_gt\\Textures\\mustang_GT.obj")) {
-    // if (!m_model->loadModel("..\\resource\\models\\face\\face.obj")) {
-    // if (!m_model.loadModel("..\\resource\\models\\cornell_box.obj")) {
-    if (!m_modelbuffer->loadModel("..\\resource\\models\\low_poly_tree\\Lowpoly_tree_sample.obj")) {
-        ERRINFO("Load model %s fail.", "..\\resource\\model\\mark\\mark.obj");
-    }
-
-    m_model->SetAccessor(m_modelbuffer.get());
-    m_model->setBaseMatrix(scale(mat4(1.0), vec3(0.1, 0.1, 0.1)));
     m_skyBox = make_shared<SkyBox>();
     m_skyBox->loadTexture({
             "..\\resource\\skyBox1\\sky_right.png",
@@ -53,29 +43,7 @@ SceneEditorApp::SceneEditorApp(int width, int height) : m_width(width), m_height
             "..\\resource\\skyBox1\\sky_front.png",
             "..\\resource\\skyBox1\\sky_back.png",
     });
-
-    m_mesh = make_shared<Mesh>();
-    vector<float> verties = {
-        1, 1, 0,
-        0, 1, 0,
-        0, 0, 0,
-        1, 0, 0
-    };
-    vector<float> color = {
-        1, 0, 0,
-        0, 1, 0,
-        0, 0, 1,
-        0, 1, 1
-    };
-    vector<float> uv = {
-        1, 1, 0,
-        0, 1, 0,
-        0, 0, 0,
-        1, 0, 0
-    };
-    m_mesh->loadData(verties, {}, color, uv, {}, {}, {0, 1, 2, 2, 3, 0});
-    int id = Texture_manager::instance()->load_texture(GL_TEXTURE_2D, "..\\resource\\models\\face\\face.png");
-    m_mesh->addTexture(Mesh::k_texDiffuse, id);
+    m_renderer.setSkyBox(m_skyBox);
 
     m_light = std::make_shared<PointLight>(vec3(0, 0, 10), 1, 0.001, 0.01);
     m_light->setColor(glm::vec4(0), glm::vec4(1.0f, 0.6f, 0.0f, 1.0f), glm::vec4(1.0f, 0.6f, 0.0f, 1.0f));
@@ -86,12 +54,53 @@ SceneEditorApp::SceneEditorApp(int width, int height) : m_width(width), m_height
     m_dirLight = std::make_shared<Dirlight>(glm::vec3(0, 0, -1));
     m_dirLight->setColor(glm::vec4(0.3f, 0.24f, 0.14f, 1.0f), glm::vec4(0.7f, 0.42f, 0.26f, 1.0f), glm::vec4(0.5f, 0.5f, 0.5f, 1.0f));
 
-    m_renderer.addMesh(m_mesh);
-    m_renderer.addModel(m_model);
     m_renderer.addLight(m_light);
     m_renderer.addLight(m_spotLight);
     m_renderer.addLight(m_dirLight);
-    m_renderer.setSkyBox(m_skyBox);
+
+    vector<float> verties, color, uv;
+    m_mesh = make_shared<Mesh>();
+
+    extern char *load_image_data(const std::string &image, int &width, int &height, int &pitch);
+    char *pict = load_image_data("..\\resource\\place\\place1.jpg", h, w, pitch);
+        for (int i = 0; i < h; i += 1) {
+        int k = 0;
+        while (k < w) {
+            verties.push_back(i * 10);
+            verties.push_back((pict[i * pitch + k * 3] + pict[i * pitch + k * 3 + 1] + pict[i * pitch + k * 3 + 2]) / 10.0f);
+            verties.push_back(k * 10);
+            geth[{i * 10, k * 10}] = (pict[i * pitch + k * 3] + pict[i * pitch + k * 3 + 1] + pict[i * pitch + k * 3 + 2]) / 10.0f;
+            for (int j = 0; j < 3; j++) {
+                color.push_back(0.5f);
+            }
+            uv.push_back(i * 1.0 / h);
+            uv.push_back(k * 1.0 / w);
+            uv.push_back(0);
+            k += 1;
+        }
+    }
+
+    vector<GLuint> seq;
+    for (int i = 0; i < h; i += 1) {
+        for (int j = 0; j < w; j += 1) {
+            if (j + 1 < w && i + 1 < h) {
+                seq.push_back(j + w * (i ));
+                seq.push_back(j+ w + w * (i ));
+                seq.push_back(j+ w + 1+ w * (i ));
+                seq.push_back(j+ w * (i));
+                seq.push_back(j + w + 1+ w * (i ));
+                seq.push_back(j + 1+ w * (i ));
+            }
+        }
+    }
+    m_mesh->loadData(verties, {}, color, uv, {}, {}, seq);
+    m_mesh->setBaseMatrix(glm::scale(glm::mat4(1.0), vec3(0.01)));
+    delete pict;
+    int id = Texture_manager::instance()->load_texture(GL_TEXTURE_2D, "..\\resource\\models\\face\\face.png");
+    m_mesh->addTexture(Mesh::k_texDiffuse, id);
+    m_renderer.addMesh(m_mesh);
+
+    m_mMove = m_mScale = m_mRotate = m_mPos = mat4(1.0);
 }
 
 bool SceneEditorApp::render()
@@ -135,9 +144,110 @@ void SceneEditorApp::dealButtonDown(const std::pair<int, int> &pos, MouseBtn but
            posWorld.x, posWorld.y, posWorld.z,
            cameraPos.x, cameraPos.y, cameraPos.z,
            dir.x, dir.y, dir.z); 
-    if(status)
+    // if(status)
+    // {
+    //     dealLoadModel(glm::vec3(posWorld.x,posWorld.y,posWorld.z));
+    // }
+
+    // m_mesh; // m_mesh 是要处理的元
+    // std::vector<glm::vec3> temp = m_mesh.getpos();
+    
+    // // 先与法线计算求得 t
+    // // 然后判断点是否在平面内
+
+    // auto find = [&](const glm::vec3 &a, const glm::vec3 &b, const glm::vec3 &c, const glm::vec3 &p) {
+    //     // 判断点是否在三角形内
+    //     if (glm::dot(glm::cross(a - b, a - c), glm::cross(a - b, a - p)) > 0 && glm::dot(glm::cross(b - c, b - a), glm::cross(b - c, b - p)) > 0 
+    //             && glm::dot(glm::cross(c - b, c - a), glm::cross(c - b, c - p)) > 0) {
+    //                 return true;
+    //             }
+    //     return false; 
+    // };
+
+    // int n = temp.size() / 3;
+    // glm::vec3 intersection;
+    // for (int i = 0; i < n; i++) {
+    //     glm::vec3 a = temp[i * 3];
+    //     glm::vec3 b = temp[i * 3 + 1];
+    //     glm::vec3 c = temp[i * 3 + 2];
+
+    //     glm::vec3 p1 = a - b;
+    //     glm::vec3 p2 = b - c;
+    //     glm::vec3 norm = -glm::cross(p1, p2);
+
+    //     // norm.x = p1.y * p2.z - p1.z * p2.y;
+    //     // norm.y = p1.z * p2.x - p1.x * p2.z;
+    //     // norm.z = p1.x * p2.y - p1.y * p2.x;
+
+    //     // norm = glm::normalize(norm);
+
+    //     int t = glm::dot((a - cameraPos), norm) / glm::dot(dir, norm);
+    //     glm::vec3 p = cameraPos + glm::vec3(dir.x * t, dir.y * t, dir.z * t);
+    //     if (find(a, b, c, p)) {
+    //         intersection = p;
+    //         break;
+    //     }
+    // }
+
+    glm::vec3 step = {dir.x * 8, dir.y * 8, dir.z * 8}; // 还差一个 blocksize
+    glm::vec3 start = cameraPos;
+    glm::vec3 end = start; start += step;
+
+    auto getdist = [&](float x1, float z1, float x2, float z2) {
+        return sqrt((x1 - x2) * (x1 - x2) + (z1 - z2) * (z1 - z2));
+    };
+
+    auto getheight = [&](glm::vec3 &pd) {
+        int x1 = (int)pd.x / 10 * 10, z1 = (int)pd.z / 10 * 10;
+        float d1 = 1.0f / getdist((float)pd.x, (float)pd.z, x1, z1);
+        float d2 = 1.0f / getdist((float)pd.x, (float)pd.z, x1, z1 + 10);
+        float d3 = 1.0f / getdist((float)pd.x, (float)pd.z, x1 + 10, z1);
+        float d4 = 1.0f / getdist((float)pd.x, (float)pd.z, x1 + 10, z1 + 10);
+        float sum = d1 + d2 + d3 + d4;
+        return d1 / sum * geth[{x1, z1}] + d2 / sum * geth[{x1, z1 + 10}] + d3 / sum * geth[{x1 + 10, z1}] + d4 / sum * geth[{x1 + 10, z1 + 10}];
+    };
+    
+    float h1 = getheight(cameraPos);
+    while (start.y > h1 && h1 >= 0) {
+        end = start;
+        start += step;
+        h1 = getheight(start);
+    }
+
+    glm::vec3 intersection = {0, 0, 0};
+    if (h1 >= 0)
     {
-        dealLoadModel(glm::vec3(posWorld.x,posWorld.y,posWorld.z));
+        for (int i = 0; i < 32; i++) {
+            glm::vec3 mid = (start + end) * 0.5f;
+            if (getheight(mid) < h1) {
+                end = mid;
+            } else {
+                start = mid;
+            }
+        }
+        glm::vec3 collision = (start + end) * 0.5f;
+        intersection = collision; 
+    }
+
+    if (intersection.x > (h - 1) * 10 || intersection.x < 0 || intersection.z > (w - 1) * 10 || intersection.z < 0) {
+        return;
+    }
+    generateModelAtPoint(intersection);
+}
+
+void SceneEditorApp::setModelIndex(int index)
+{
+    m_modelBufferIndex = index;
+}
+
+void SceneEditorApp::generateModelAtPoint(const glm::vec3 &point)
+{
+    if (m_modelBufferIndex < m_modelList.size()) {
+        m_currModel = make_shared<Model>();
+        m_currModel->SetAccessor(m_modelList[m_modelBufferIndex].get());
+        m_mPos = glm::translate(mat4(1.0), point);
+        m_currModel->setTranslateMatrix(m_mPos);
+        m_renderer.addModel(m_currModel);
     }
 }
 
@@ -154,82 +264,6 @@ void SceneEditorApp::dealMouseMove(const std::pair<int, int> &pos, const std::pa
     m_camera.rotate(radians(rpos.first * 0.1), vec3{0, 1, 0});
     m_camera.rotate(radians(rpos.second * 0.1), vec3{1, 0, 0});
     m_spotLight->setDir(-m_camera.get_front());
-}
-void SceneEditorApp::dealRotateModel(glm::vec3 axis, std::shared_ptr<Model> m_model)
-{
-    // std::shared_ptr<Model> m_model2 = make_shared<Model>();
-    // m_model->SetAccessor(m_modelbuffer.get());
-    glm::mat4 tran = m_model->getBaseMatrix();
-    tran = glm::rotate(tran,glm::radians(5.0f),axis);
-    m_model->setBaseMatrix(tran);
-    // m_renderer.addModel(m_model);
-}
-
-void SceneEditorApp::dealMoveModel(glm::vec3 trans, std::shared_ptr<Model> m_model)
-{
-    // std::shared_ptr<Model> m_model2 = make_shared<Model>();
-    // m_model->SetAccessor(m_modelbuffer.get());
-    glm::mat4 tran = m_model->getBaseMatrix();
-    tran = glm::translate(tran,trans);
-    m_model->setBaseMatrix(tran);
-    // m_renderer.addModel(m_model2);
-}
-
-void SceneEditorApp::dealScaleModel(glm::vec3 trans, std::shared_ptr<Model> m_model)
-{
-    // std::shared_ptr<Model> m_model2 = make_shared<Model>();
-    // m_model->SetAccessor(m_modelbuffer.get());
-    glm::mat4 tran = m_model->getBaseMatrix();
-    tran = glm::scale(tran,trans);
-    m_model->setBaseMatrix(tran);
-    // m_renderer.addModel(m_model2);
-}
-
-void SceneEditorApp::dealRotateModel(glm::vec3 axis)
-{
-    // std::shared_ptr<Model> m_model2 = make_shared<Model>();
-    // m_model->SetAccessor(m_modelbuffer.get());
-    glm::mat4 tran = m_model->getBaseMatrix();
-    tran = glm::rotate(tran,glm::radians(5.0f),axis);
-    m_model->setBaseMatrix(tran);
-    // m_renderer.addModel(m_model);
-}
-
-void SceneEditorApp::dealMoveModel(glm::vec3 trans)
-{
-    // std::shared_ptr<Model> m_model2 = make_shared<Model>();
-    // m_model->SetAccessor(m_modelbuffer.get());
-    glm::mat4 tran = m_model->getBaseMatrix();
-    tran = glm::translate(tran,trans);
-    m_model->setBaseMatrix(tran);
-    // m_renderer.addModel(m_model2);
-}
-
-void SceneEditorApp::dealScaleModel(glm::vec3 trans)
-{
-    // std::shared_ptr<Model> m_model2 = make_shared<Model>();
-    // m_model->SetAccessor(m_modelbuffer.get());
-    glm::mat4 tran = m_model->getBaseMatrix();
-    tran = glm::scale(tran,trans);
-    m_model->setBaseMatrix(tran);
-    // m_renderer.addModel(m_model2);
-}
-
-void SceneEditorApp::dealLoadModel(glm::vec3 trans)
-{
-    std::shared_ptr<Model> mm_model = make_shared<Model>();
-    // if (!m_model->loadModel("..\\resource\\models\\mark\\mark.obj")) {
-    // if (!m_model->loadModel("..\\resource\\models\\Humvee_models\\Humvee.obj")) {
-    // if (!m_model->loadModel("..\\resource\\models\\mustang_gt\\Textures\\mustang_GT.obj")) {
-    // if (!m_model->loadModel("..\\resource\\models\\face\\face.obj")) {
-    // if (!m_model.loadModel("..\\resource\\models\\cornell_box.obj")) {
-
-    mm_model->SetAccessor(m_modelbuffer.get());
-    glm::mat4 tran = glm::mat4(1.0f);
-    tran = glm::translate(tran,trans);
-    mm_model->setTranslateMatrix(tran);
-    m_renderer.addModel(mm_model);
-    m_model = mm_model;
 }
 
 void SceneEditorApp::dealWheel(const std::pair<int, int> &pos, float scroll)
@@ -249,16 +283,16 @@ void SceneEditorApp::dealKeyDown(Key_code key)
     const auto st = get_key_state(num_key);
     vec3 move(0);
     if (st[key_w]) {
-        move[2] -= 0.2;
+        move[2] -= 2;
     }
     if (st[key_s]) {
-        move[2] += 0.2;
+        move[2] += 2;
     }
     if (st[key_a]) {
-        move[0] -= 0.2;
+        move[0] -= 2;
     }
     if (st[key_d]) {
-        move[0] += 0.2;
+        move[0] += 2;
     }
     // if (st[key_]) {
     //     move[1] -= 0.2;
@@ -280,6 +314,41 @@ void SceneEditorApp::dealWinSizeChange(const std::pair<int, int> &size)
 {
     m_camera.set_size_ratio(size.first * 1.0 / size.second);
     glViewport(0, 0, size.first, size.second);
+}
+
+void SceneEditorApp::dealLoadModel(const std::string &model)
+{
+    auto m = make_shared<ModelBuffer>();
+    m->loadModel(model);
+    m_modelList.push_back(m);
+}
+
+
+void SceneEditorApp::dealScaleModel(const glm::mat4 &mat)
+{
+    m_mScale = mat;
+    if (!m_currModel) {
+        return;
+    }
+    m_currModel->setBaseMatrix(m_mRotate * m_mScale);
+}
+
+void SceneEditorApp::dealRotateModel(const glm::mat4 &mat)
+{
+    m_mRotate = mat;
+    if (!m_currModel) {
+        return;
+    }
+    m_currModel->setBaseMatrix(m_mRotate * m_mScale);
+}
+
+void SceneEditorApp::dealMoveModel(const glm::mat4 &mat)
+{
+    m_mMove = mat;
+    if (!m_currModel) {
+        return;
+    }
+    m_currModel->setTranslateMatrix(m_mMove * m_mPos);
 }
 
 // void SceneEditorApp::dealOther(const SDL_Event *pe)

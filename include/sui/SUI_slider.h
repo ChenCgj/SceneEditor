@@ -19,6 +19,8 @@ public:
     ~Slider();
 private:
     void deal_mouse_move_event(Mouse_motion_event &move_event) override;
+    void deal_mouse_button_up_event(Mouse_button_event &button_event) override;
+    void deal_mouse_button_down_event(Mouse_button_event &button_event) override;
     void draw_slide_block(Canvas &canvas);
     Rect get_block_rect() const;
     static constexpr int k_block_width = 10;

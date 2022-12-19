@@ -30,26 +30,27 @@ public:
     // void dealKeyUp(SDL_Keycode key);
     void dealWinSizeChange(const std::pair<int, int> &size);
     // void dealOther(const SDL_Event *pe);
-    void dealLoadModel(glm::vec3 trans);
-    void dealRotateModel(glm::vec3 axis);
-    void dealScaleModel(glm::vec3 trans);
-    void dealMoveModel(glm::vec3 trans);
-    void dealRotateModel(glm::vec3 axis, std::shared_ptr<Model> m_model);
-    void dealScaleModel(glm::vec3 trans, std::shared_ptr<Model> m_model);
-    void dealMoveModel(glm::vec3 trans, std::shared_ptr<Model> m_model);
+    void dealLoadModel(const std::string &model);
+    void dealScaleModel(const glm::mat4 &mat);
+    void dealRotateModel(const glm::mat4 &mat);
+    void dealMoveModel(const glm::mat4 &mat);
+    void setModelIndex(int index);
 protected:
 private:
+    void generateModelAtPoint(const glm::vec3 &point);
     int m_width, m_height;
     Camera m_camera;
     Renderer m_renderer;
     std::shared_ptr<Mesh> m_mesh;
-    std::shared_ptr<Model> m_model;
-    std::shared_ptr<ModelBuffer> m_modelbuffer;
+    std::vector<std::shared_ptr<ModelBuffer>> m_modelList;
     std::shared_ptr<PointLight> m_light;
     std::shared_ptr<SpotLight> m_spotLight;
     std::shared_ptr<Dirlight> m_dirLight;
     std::shared_ptr<SkyBox> m_skyBox;
     bool status;
+    std::shared_ptr<Model> m_currModel;
+    glm::mat4 m_mMove, m_mScale, m_mRotate, m_mPos;
+    int m_modelBufferIndex;
 };
 
 #endif
