@@ -31,7 +31,7 @@ SceneEditorApp::SceneEditorApp(int width, int height) : m_width(width), m_height
     initOpengl();
     glViewport(0, 0, width, height);
     m_camera.set_size_ratio(width * 1.0 / height);
-    m_camera.set_pos(vec3{0.0, 0.0, 5.0}, vec3{0, 0, 0});
+    m_camera.set_pos(vec3{9.0, 3.0, 5.0}, vec3{0, 0, 0});
     m_camera.set_distance(0.1, 1000);
 
     m_skyBox = make_shared<SkyBox>();
@@ -121,8 +121,14 @@ void SceneEditorApp::setStatus()
 
 void SceneEditorApp::dealButtonDown(const std::pair<int, int> &pos, MouseBtn button)
 {
-    if (button != MouseBtn::k_btnLeft || is_alt_down()) {
+    if ((button != MouseBtn::k_btnLeft && button != MouseBtn::k_btnRight) || is_alt_down()) {
         return;
+    }
+    if(button == MouseBtn::k_btnRight)
+    {
+        m_renderer.removeModel(m_currModel);
+        m_currModel = m_renderer.getLastModel();
+        return ;
     }
     auto size = make_pair(m_width, m_height);
 
@@ -294,10 +300,10 @@ void SceneEditorApp::dealKeyDown(Key_code key)
     if (st[key_d]) {
         move[0] += 2;
     }
-    // if (st[key_]) {
+    // if (st[SDLK_DOWN]) {
     //     move[1] -= 0.2;
     // }
-    // if (st.count(SDLK_UP)) {
+    // if (st[SDLK_UP]) {
     //     move[1] += 0.2;
     // }
     m_camera.move(move);

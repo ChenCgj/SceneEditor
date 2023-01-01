@@ -15,6 +15,7 @@ public:
     ~Renderer() = default;
     void addModel(std::shared_ptr<Model> pModel);
     void removeModel(std::shared_ptr<Model> pModel);
+    std::shared_ptr<Model> getLastModel();
     void addMesh(std::shared_ptr<Mesh> pMesh);
     void removeMesh(std::shared_ptr<Mesh> pMesh);
     void addLight(std::shared_ptr<Light> pLight);

@@ -21,6 +21,11 @@ void Renderer::removeModel(std::shared_ptr<Model> pModel)
     m_models.remove(pModel);
 }
 
+std::shared_ptr<Model> Renderer::getLastModel()
+{
+    return m_models.back();
+}
+
 void Renderer::addMesh(std::shared_ptr<Mesh> pMesh)
 {
     if (!pMesh) {
