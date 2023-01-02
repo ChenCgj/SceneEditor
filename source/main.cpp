@@ -26,6 +26,7 @@ static void generateModelImage();
 static Grid_pane *generateModelOperateMenu();
 // static Grid_pane *generateModelOperateMenu2(vector<string> fileVec);
 static Pane *generateModelPic();
+static Pane *generateSkyPic();
 
 int main(int argc, char *argv[])
 {
@@ -44,6 +45,7 @@ int main(int argc, char *argv[])
     pWnd->add_node(graphic);
     pWnd->add_node(generateModelOperateMenu());
     pWnd->add_node(generateModelPic());
+    pWnd->add_node(generateSkyPic());
     // pWnd->add_node(generateModelOperateMenu2(fileVec));
     pWnd->show();
     return 0;
@@ -138,6 +140,20 @@ static Grid_pane *generateModelOperateMenu()
     arg->rotatex = sliderrx;
     arg->rotatey = sliderry;
     arg->rotatez = sliderrz;
+    return pane;
+}
+
+static Pane *generateSkyPic()
+{
+    Pane *pane = new Pane(1100,100,20,200);
+    Button *sky = new Button("change sky",1010,270,120,20);
+    Button *back = new Button("return",1010,270,120,20);
+    pane->add_node(sky);
+    pane->add_node(back);
+    pane->add_content(*sky,10,20);
+    pane->add_content(*back,10,40);
+    sky->add_listener(dealChangeSkyBox,Button::Button_event::be_up, arg);
+    back->add_listener(dealDelModel,Button::Button_event::be_up, arg);
     return pane;
 }
 

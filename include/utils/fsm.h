@@ -32,4 +32,6 @@ void dealMoveZ(const Mouse_motion_event &e, void *arg);
 void dealRotateX(const Mouse_motion_event &e, void *arg);
 void dealRotateY(const Mouse_motion_event &e, void *arg);
 void dealRotateZ(const Mouse_motion_event &e, void *arg);
+void dealDelModel(const Mouse_button_event &e, void *arg);
+void dealChangeSkyBox(const Mouse_button_event &e, void *arg);
 #endif

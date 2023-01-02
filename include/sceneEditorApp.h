@@ -23,6 +23,8 @@ public:
     bool getStatus();
     void setStatus();
     void dealButtonDown(const std::pair<int, int> &pos, MouseBtn button);
+    void dealDelModel(MouseBtn button);
+    void dealChangeSkyBox(MouseBtn button);
     // void dealButtonUp(const std::pair<int, int> &pos, MouseBtn button);
     void dealMouseMove(const std::pair<int, int> &pos, const std::pair<int, int> &rpos);
     void dealWheel(const std::pair<int, int> &pos, float scroll);
@@ -35,6 +37,7 @@ public:
     void dealRotateModel(const glm::mat4 &mat);
     void dealMoveModel(const glm::mat4 &mat);
     void setModelIndex(int index);
+    int setSkyBoxIndex();
 protected:
 private:
     void generateModelAtPoint(const glm::vec3 &point);
@@ -46,11 +49,12 @@ private:
     std::shared_ptr<PointLight> m_light;
     std::shared_ptr<SpotLight> m_spotLight;
     std::shared_ptr<Dirlight> m_dirLight;
-    std::shared_ptr<SkyBox> m_skyBox;
+    std::vector<std::shared_ptr<SkyBox>> m_skyBoxList;
     bool status;
     std::shared_ptr<Model> m_currModel;
     glm::mat4 m_mMove, m_mScale, m_mRotate, m_mPos;
     int m_modelBufferIndex;
+    int m_skyBoxIndex;
 };
 
 #endif

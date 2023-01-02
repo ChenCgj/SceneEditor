@@ -26,7 +26,7 @@ static void initOpengl();
 int h, w, pitch;
 
 
-SceneEditorApp::SceneEditorApp(int width, int height) : m_width(width), m_height(height), status(false), m_modelBufferIndex(0)
+SceneEditorApp::SceneEditorApp(int width, int height) : m_width(width), m_height(height), status(false), m_modelBufferIndex(0), m_skyBoxIndex(0)
 {
     initOpengl();
     glViewport(0, 0, width, height);
@@ -34,8 +34,18 @@ SceneEditorApp::SceneEditorApp(int width, int height) : m_width(width), m_height
     m_camera.set_pos(vec3{9.0, 3.0, 5.0}, vec3{0, 0, 0});
     m_camera.set_distance(0.1, 1000);
 
-    m_skyBox = make_shared<SkyBox>();
-    m_skyBox->loadTexture({
+    std::shared_ptr<SkyBox> m_skyBox1 = make_shared<SkyBox>();
+    std::shared_ptr<SkyBox> m_skyBox2 = make_shared<SkyBox>();
+    m_skyBox1->loadTexture({
+            "..\\resource\\skyBox2\\sky_right.jpg",
+            "..\\resource\\skyBox2\\sky_left.jpg",
+            "..\\resource\\skyBox2\\sky_top.jpg",
+            "..\\resource\\skyBox2\\sky_bottom.jpg",
+            "..\\resource\\skyBox2\\sky_front.jpg",
+            "..\\resource\\skyBox2\\sky_back.jpg",
+    });
+    m_skyBoxList.push_back(m_skyBox1);
+        m_skyBox2->loadTexture({
             "..\\resource\\skyBox1\\sky_right.png",
             "..\\resource\\skyBox1\\sky_left.png",
             "..\\resource\\skyBox1\\sky_top.png",
@@ -43,7 +53,8 @@ SceneEditorApp::SceneEditorApp(int width, int height) : m_width(width), m_height
             "..\\resource\\skyBox1\\sky_front.png",
             "..\\resource\\skyBox1\\sky_back.png",
     });
-    m_renderer.setSkyBox(m_skyBox);
+    m_skyBoxList.push_back(m_skyBox2);
+    m_renderer.setSkyBox(m_skyBoxList[0]);
 
     m_light = std::make_shared<PointLight>(vec3(0, 0, 10), 1, 0.001, 0.01);
     m_light->setColor(glm::vec4(0), glm::vec4(1.0f, 0.6f, 0.0f, 1.0f), glm::vec4(1.0f, 0.6f, 0.0f, 1.0f));
@@ -241,11 +252,39 @@ void SceneEditorApp::dealButtonDown(const std::pair<int, int> &pos, MouseBtn but
     generateModelAtPoint(intersection);
 }
 
+void SceneEditorApp::dealDelModel(MouseBtn button)
+{
+    if ((button != MouseBtn::k_btnLeft) || is_alt_down()) {
+        return;
+    }
+    m_renderer.removeModel(m_currModel);
+    m_currModel = m_renderer.getLastModel();
+}
+
+void SceneEditorApp::dealChangeSkyBox(MouseBtn button)
+{
+    if ((button != MouseBtn::k_btnLeft) || is_alt_down()) {
+        return;
+    }
+    int index = SceneEditorApp::setSkyBoxIndex();
+    m_renderer.setSkyBox(m_skyBoxList[index]);
+}
 void SceneEditorApp::setModelIndex(int index)
 {
     m_modelBufferIndex = index;
 }
-
+int SceneEditorApp::setSkyBoxIndex()
+{
+    if(m_skyBoxIndex < m_skyBoxList.size()-1)
+    {
+        m_skyBoxIndex += 1;
+    }
+    else
+    {
+        m_skyBoxIndex = 0;
+    }
+    return m_skyBoxIndex;
+}
 void SceneEditorApp::generateModelAtPoint(const glm::vec3 &point)
 {
     if (m_modelBufferIndex < m_modelList.size()) {

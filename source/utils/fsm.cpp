@@ -129,3 +129,17 @@ void dealRotateZ(const Mouse_motion_event &e, void *arg)
     r = glm::rotate(r, (float)rz, glm::vec3(1, 0, 0));
     args->m_app->dealRotateModel(r);
 }
+
+void dealDelModel(const Mouse_button_event &e, void *arg)
+{
+    GraphicArg *args = reinterpret_cast<GraphicArg *>(arg);
+    SceneEditorApp::MouseBtn btn = SceneEditorApp::MouseBtn::k_btnLeft;
+    args->m_app->dealDelModel(btn);
+}
+
+void dealChangeSkyBox(const Mouse_button_event &e, void *arg)
+{
+    GraphicArg *args = reinterpret_cast<GraphicArg *>(arg);
+    SceneEditorApp::MouseBtn btn = SceneEditorApp::MouseBtn::k_btnLeft;
+    args->m_app->dealChangeSkyBox(btn);
+}
