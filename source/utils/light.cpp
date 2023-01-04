@@ -20,7 +20,24 @@ void Light::setColor(const glm::vec4 &a, const glm::vec4 &d, const glm::vec4 &s)
     m_lc.diffuse = d;
     m_lc.specular = s;
 }
+void Light::TurnDownColor()
+{   
+    if(m_lc.diffuse.x > 0.1f)
+    {
+        m_lc.diffuse.x -= 0.2f;
+        m_lc.diffuse.y -= 0.2f;
+        m_lc.specular.x -= 0.2f;
+        m_lc.specular.y -= 0.2f;
+    }
+}
 
+void Light::TurnUpColor()
+{
+    m_lc.diffuse.x += 0.2f;
+    m_lc.diffuse.y += 0.2f;
+    m_lc.specular.x += 0.2f;
+    m_lc.specular.y += 0.2f;
+}
 Dirlight::Dirlight(const glm::vec3 &dir) : Light(), m_dir{dir}
 {
     m_name = "dirLight";

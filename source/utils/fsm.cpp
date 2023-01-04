@@ -143,3 +143,59 @@ void dealChangeSkyBox(const Mouse_button_event &e, void *arg)
     SceneEditorApp::MouseBtn btn = SceneEditorApp::MouseBtn::k_btnLeft;
     args->m_app->dealChangeSkyBox(btn);
 }
+
+void dealTurnOffLight(const Mouse_button_event &e, void *arg)
+{
+    GraphicArg *args = reinterpret_cast<GraphicArg *>(arg);
+    SceneEditorApp::MouseBtn btn = SceneEditorApp::MouseBtn::k_btnLeft;
+    args->m_app->dealTurnOffLight(btn);
+}
+
+void dealTurnOnLight(const Mouse_button_event &e, void *arg)
+{
+    GraphicArg *args = reinterpret_cast<GraphicArg *>(arg);
+    SceneEditorApp::MouseBtn btn = SceneEditorApp::MouseBtn::k_btnLeft;
+    args->m_app->dealTurnOnLight(btn);
+}
+
+void dealTurnDownLight(const Mouse_button_event &e, void *arg)
+{
+    GraphicArg *args = reinterpret_cast<GraphicArg *>(arg);
+    SceneEditorApp::MouseBtn btn = SceneEditorApp::MouseBtn::k_btnLeft;
+    args->m_app->dealTurnDownLight(btn);
+}
+
+void dealTurnUpLight(const Mouse_button_event &e, void *arg)
+{
+    GraphicArg *args = reinterpret_cast<GraphicArg *>(arg);
+    SceneEditorApp::MouseBtn btn = SceneEditorApp::MouseBtn::k_btnLeft;
+    args->m_app->dealTurnUpLight(btn);
+}
+
+void dealTurnOffLight2(const Mouse_button_event &e, void *arg)
+{
+    GraphicArg *args = reinterpret_cast<GraphicArg *>(arg);
+    SceneEditorApp::MouseBtn btn = SceneEditorApp::MouseBtn::k_btnLeft;
+    args->m_app->dealTurnOffLight2(btn);
+}
+
+void dealTurnOnLight2(const Mouse_button_event &e, void *arg)
+{
+    GraphicArg *args = reinterpret_cast<GraphicArg *>(arg);
+    SceneEditorApp::MouseBtn btn = SceneEditorApp::MouseBtn::k_btnLeft;
+    args->m_app->dealTurnOnLight2(btn);
+}
+
+void dealTurnDownLight2(const Mouse_button_event &e, void *arg)
+{
+    GraphicArg *args = reinterpret_cast<GraphicArg *>(arg);
+    SceneEditorApp::MouseBtn btn = SceneEditorApp::MouseBtn::k_btnLeft;
+    args->m_app->dealTurnDownLight2(btn);
+}
+
+void dealTurnUpLight2(const Mouse_button_event &e, void *arg)
+{
+    GraphicArg *args = reinterpret_cast<GraphicArg *>(arg);
+    SceneEditorApp::MouseBtn btn = SceneEditorApp::MouseBtn::k_btnLeft;
+    args->m_app->dealTurnUpLight2(btn);
+}

@@ -88,7 +88,7 @@ void clean(void *arg)
 
 static Grid_pane *generateModelOperateMenu()
 {
-    Grid_pane *pane = new Grid_pane(500, 480, 500, 100, 3, 2);
+    Grid_pane *pane = new Grid_pane(0, 530, 1280, 80, 3, 2);
     Label *labelz = new Label("Zoom", 18, 0, 0, 100, 20);
     Slider *sliderz = new Slider(0, 0, 100, 20, -10, 10);
     Label *labelmx = new Label("Move X", 18, 0, 0, 100, 20);
@@ -145,29 +145,61 @@ static Grid_pane *generateModelOperateMenu()
 
 static Pane *generateSkyPic()
 {
-    Pane *pane = new Pane(1100,100,20,200);
-    Button *sky = new Button("change sky",1010,270,120,20);
-    Button *back = new Button("return",1010,270,120,20);
+    Pane *pane = new Pane(1090,0,0,200);
+    Button *sky = new Button("change sky",1010,270,180,35);
+    Button *back = new Button("recall model",1010,270,180,35);
+    Button *turnoff = new Button("turn off spotlight",1010,270,180,35);
+    Button *turnon = new Button("turn on spotlight",1010,270,180,35);
+    Button *turndown = new Button("turn down spotlight",1010,270,180,35);
+    Button *turnup = new Button("turn up spotlight",1010,270,180,35);
+    Button *turnoff2 = new Button("turn off dirlight",1010,270,180,35);
+    Button *turnon2 = new Button("turn on dirlight",1010,270,180,35);
+    Button *turndown2 = new Button("turn down dirlight",1010,270,180,35);
+    Button *turnup2 = new Button("turn up dirlight",1010,270,180,35);
     pane->add_node(sky);
     pane->add_node(back);
-    pane->add_content(*sky,10,20);
-    pane->add_content(*back,10,40);
+    pane->add_node(turnoff);
+    pane->add_node(turnon);
+    pane->add_node(turndown);
+    pane->add_node(turnup);
+    pane->add_node(turnoff2);
+    pane->add_node(turnon2);
+    pane->add_node(turndown2);
+    pane->add_node(turnup2);
+    pane->add_content(*sky,10,0);
+    pane->add_content(*back,10,35);
+    pane->add_content(*turnoff,10,70);
+    pane->add_content(*turnon,10,105);
+    pane->add_content(*turndown,10,140);
+    pane->add_content(*turnup,10,175);
+    pane->add_content(*turnoff2,10,210);
+    pane->add_content(*turnon2,10,245);
+    pane->add_content(*turndown2,10,280);
+    pane->add_content(*turnup2,10,315);
     sky->add_listener(dealChangeSkyBox,Button::Button_event::be_up, arg);
     back->add_listener(dealDelModel,Button::Button_event::be_up, arg);
+    turnoff->add_listener(dealTurnOffLight,Button::Button_event::be_up, arg);
+    turnon->add_listener(dealTurnOnLight,Button::Button_event::be_up, arg);
+    turndown->add_listener(dealTurnDownLight,Button::Button_event::be_up, arg);
+    turnup->add_listener(dealTurnUpLight,Button::Button_event::be_up, arg);
+    turnoff2->add_listener(dealTurnOffLight2,Button::Button_event::be_up, arg);
+    turnon2->add_listener(dealTurnOnLight2,Button::Button_event::be_up, arg);
+    turndown2->add_listener(dealTurnDownLight2,Button::Button_event::be_up, arg);
+    turnup2->add_listener(dealTurnUpLight2,Button::Button_event::be_up, arg);    
     return pane;
 }
 
 static Pane *generateModelPic()
 {
-    Pane *pane = new Pane(1000, 400, 100, 130);
-    Button *before = new Button("<", 1010, 570, 30, 20);
-    Button *after = new Button(">", 1060, 570, 30, 20);
+    Pane *pane = new Pane(1100, 350, 180, 160);
+    Button *before = new Button("<", 1010, 570, 90, 20);
+    Button *after = new Button(">", 1060, 570, 90, 20);
     pane->add_node(before);
     pane->add_node(after);
-    pane->add_content(*before, 10, 110);
-    pane->add_content(*after, 60, 110);
+    pane->add_content(*before, 0, 160);
+    pane->add_content(*after, 90, 160);
 
-    Graphic_board *board = new Graphic_board(0, 0, 100, 100);
+    Graphic_board *board = new Graphic_board(0, 0, 180, 160);
     board->set_draw_color({255, 125, 125, 255});
     board->clear();
     board->draw_image(*arg->images[0], 0, 0);
@@ -205,25 +237,25 @@ static Pane *generateModelPic()
 
 static void generateModelImage()
 {
-    Image *img = new Image(100, 100);
+    Image *img = new Image(180, 180);
     img->load_img("..\\resource\\pic\\pic1.png");
     arg->images.push_back(img);
-    img = new Image(100, 100);
+    img = new Image(180, 180);
     img->load_img("..\\resource\\pic\\pic2.png");
     arg->images.push_back(img);
-    img = new Image(100, 100);
+    img = new Image(180, 180);
     img->load_img("..\\resource\\pic\\pic3.png");
     arg->images.push_back(img);
-    img = new Image(100, 100);
+    img = new Image(180, 180);
     img->load_img("..\\resource\\pic\\pic4.png");
     arg->images.push_back(img);
-    img = new Image(100, 100);
+    img = new Image(180, 180);
     img->load_img("..\\resource\\pic\\pic5.png");
     arg->images.push_back(img);
-    img = new Image(100, 100);
+    img = new Image(180, 180);
     img->load_img("..\\resource\\pic\\pic6.png");
     arg->images.push_back(img);
-    img = new Image(100, 100);
+    img = new Image(180, 180);
     img->load_img("..\\resource\\pic\\pic7.png");
     arg->images.push_back(img);
 }

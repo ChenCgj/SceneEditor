@@ -25,6 +25,14 @@ public:
     void dealButtonDown(const std::pair<int, int> &pos, MouseBtn button);
     void dealDelModel(MouseBtn button);
     void dealChangeSkyBox(MouseBtn button);
+    void dealTurnOffLight(MouseBtn button);
+    void dealTurnOnLight(MouseBtn button);
+    void dealTurnDownLight(MouseBtn button);
+    void dealTurnUpLight(MouseBtn button);
+    void dealTurnOffLight2(MouseBtn button);
+    void dealTurnOnLight2(MouseBtn button);
+    void dealTurnDownLight2(MouseBtn button);
+    void dealTurnUpLight2(MouseBtn button);
     // void dealButtonUp(const std::pair<int, int> &pos, MouseBtn button);
     void dealMouseMove(const std::pair<int, int> &pos, const std::pair<int, int> &rpos);
     void dealWheel(const std::pair<int, int> &pos, float scroll);

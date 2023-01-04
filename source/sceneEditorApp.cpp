@@ -269,6 +269,86 @@ void SceneEditorApp::dealChangeSkyBox(MouseBtn button)
     int index = SceneEditorApp::setSkyBoxIndex();
     m_renderer.setSkyBox(m_skyBoxList[index]);
 }
+
+void SceneEditorApp::dealTurnOffLight(MouseBtn button)
+{
+    if ((button != MouseBtn::k_btnLeft) || is_alt_down()) {
+        return;
+    }
+    m_renderer.removeLight(m_spotLight);
+}
+
+void SceneEditorApp::dealTurnOnLight(MouseBtn button)
+{
+    if ((button != MouseBtn::k_btnLeft) || is_alt_down()) {
+        return;
+    }
+    m_renderer.removeLight(m_spotLight);
+    m_renderer.addLight(m_spotLight);
+}
+
+void SceneEditorApp::dealTurnDownLight(MouseBtn button)
+{
+    if ((button != MouseBtn::k_btnLeft) || is_alt_down()) {
+        return;
+    }
+    m_renderer.removeLight(m_spotLight);
+    m_spotLight->TurnDownColor();
+    m_renderer.addLight(m_spotLight);
+
+}
+
+
+void SceneEditorApp::dealTurnUpLight(MouseBtn button)
+{
+    if ((button != MouseBtn::k_btnLeft) || is_alt_down()) {
+        return;
+    }
+    m_renderer.removeLight(m_spotLight);
+    m_spotLight->TurnUpColor();
+    m_renderer.addLight(m_spotLight);
+
+}
+
+void SceneEditorApp::dealTurnOffLight2(MouseBtn button)
+{
+    if ((button != MouseBtn::k_btnLeft) || is_alt_down()) {
+        return;
+    }
+    m_renderer.removeLight(m_dirLight);
+}
+
+void SceneEditorApp::dealTurnOnLight2(MouseBtn button)
+{
+    if ((button != MouseBtn::k_btnLeft) || is_alt_down()) {
+        return;
+    }
+    m_renderer.removeLight(m_dirLight);
+    m_renderer.addLight(m_dirLight);
+}
+
+void SceneEditorApp::dealTurnDownLight2(MouseBtn button)
+{
+    if ((button != MouseBtn::k_btnLeft) || is_alt_down()) {
+        return;
+    }
+    m_renderer.removeLight(m_dirLight);
+    m_dirLight->TurnDownColor();
+    m_renderer.addLight(m_dirLight);
+
+}
+
+
+void SceneEditorApp::dealTurnUpLight2(MouseBtn button)
+{
+    if ((button != MouseBtn::k_btnLeft) || is_alt_down()) {
+        return;
+    }
+    m_renderer.removeLight(m_dirLight);
+    m_dirLight->TurnUpColor();
+    m_renderer.addLight(m_dirLight);
+
+}
 void SceneEditorApp::setModelIndex(int index)
 {
     m_modelBufferIndex = index;

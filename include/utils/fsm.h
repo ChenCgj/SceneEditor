@@ -34,4 +34,12 @@ void dealRotateY(const Mouse_motion_event &e, void *arg);
 void dealRotateZ(const Mouse_motion_event &e, void *arg);
 void dealDelModel(const Mouse_button_event &e, void *arg);
 void dealChangeSkyBox(const Mouse_button_event &e, void *arg);
+void dealTurnOffLight(const Mouse_button_event &e, void *arg);
+void dealTurnOnLight(const Mouse_button_event &e, void *arg);
+void dealTurnDownLight(const Mouse_button_event &e, void *arg);
+void dealTurnUpLight(const Mouse_button_event &e, void *arg);
+void dealTurnOffLight2(const Mouse_button_event &e, void *arg);
+void dealTurnOnLight2(const Mouse_button_event &e, void *arg);
+void dealTurnDownLight2(const Mouse_button_event &e, void *arg);
+void dealTurnUpLight2(const Mouse_button_event &e, void *arg);
 #endif

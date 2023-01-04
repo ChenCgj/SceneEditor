@@ -16,6 +16,8 @@ public:
     };
     Light();
     LightType type() const;
+    void TurnDownColor();
+    void TurnUpColor();
     virtual bool applyToShader(Shader &shader, int index) const = 0;
     void setColor(const glm::vec4 &ambient = glm::vec4{0.0},
           const glm::vec4 &diffuse = glm::vec4{1.0},
