@@ -126,7 +126,7 @@ void dealRotateZ(const Mouse_motion_event &e, void *arg)
     glm::mat4 r(1.0);
     r = glm::rotate(r, (float)rz, glm::vec3(0, 0, 1));
     r = glm::rotate(r, (float)ry, glm::vec3(0, 1, 0));
-    r = glm::rotate(r, (float)rz, glm::vec3(1, 0, 0));
+    r = glm::rotate(r, (float)rx, glm::vec3(1, 0, 0));
     args->m_app->dealRotateModel(r);
 }
 

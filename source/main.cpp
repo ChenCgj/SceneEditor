@@ -145,7 +145,8 @@ static Grid_pane *generateModelOperateMenu()
 
 static Pane *generateSkyPic()
 {
-    Pane *pane = new Pane(1090,0,0,200);
+    // currently the width and height do not have any effect
+    Pane *pane = new Pane(1090,0,270,200);
     Button *sky = new Button("change sky",1010,270,180,35);
     Button *back = new Button("recall model",1010,270,180,35);
     Button *turnoff = new Button("turn off spotlight",1010,270,180,35);
@@ -185,7 +186,7 @@ static Pane *generateSkyPic()
     turnoff2->add_listener(dealTurnOffLight2,Button::Button_event::be_up, arg);
     turnon2->add_listener(dealTurnOnLight2,Button::Button_event::be_up, arg);
     turndown2->add_listener(dealTurnDownLight2,Button::Button_event::be_up, arg);
-    turnup2->add_listener(dealTurnUpLight2,Button::Button_event::be_up, arg);    
+    turnup2->add_listener(dealTurnUpLight2,Button::Button_event::be_up, arg);
     return pane;
 }
 
